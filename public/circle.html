@@ -1,0 +1,72 @@
+<!DOCTYPE html> 
+
+<html>
+
+    <head>
+        <title>Circle Editor</title>
+
+        <script defer src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+        <script defer src="https://www.gstatic.com/firebasejs/8.0.0/firebase-analytics.js"></script>
+        <script defer src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
+        <script defer src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
+
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script
+        src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+        integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+        crossorigin="anonymous"></script>
+
+        <script defer src = "js/fbConfig.js"></script>
+        <script defer src="js/classes.js"></script>
+        <script defer src = "js/map.js"></script>
+        <script defer src = "js/database.js"></script>
+        <script defer src = "js/clicking.js"></script>
+        <script defer src = "js/text.js"></script>
+
+        <link href = "css/nav.css" rel="stylesheet">
+        <link href="css/map.css" rel="stylesheet">
+        <link href="css/text.css" rel="stylesheet">
+        <link href="css/contextmenu.css" rel="stylesheet">
+
+    </head>
+
+    <body>
+
+        <div id = "navbar">
+            <div id = "navLeft">
+                <img id = "logo" src = "images/circlelogo.png">
+                <h1 id = "circleTitle"></h1>
+            </div>
+
+            <button class = "navButton invertedButton" onclick="saveCircleData()" id = "saveButton">Save</button>
+            <button class = "navButton" onclick="window.location.href = '/home.html'">Home</button>
+            <button class = "navButton" onclick="signout()">Sign Out</button>
+            
+        </div>
+
+        <div id = "editor">
+            <div id = "mapContainer">
+                <h1 id = "editorExplanation" class = "grayText">Get started by adding some circles, then right click to add connections!</h1>
+            </div>
+            <div id = "textContainer">
+                <input class = "greenInput" id = "newCardInput" placeholder="add a circle..."/>
+                <div id = "connectionsContainer" class = "container"></div>
+                <textarea placeholder="description..." id = "descriptionEnter" class = "greenTextarea"></textarea>
+            </div>
+        </div>
+        
+
+
+        <div id = "contextMenu" class = "contextMenu">
+            <button class = "contextItem" id = "contextConnect" onclick="connectRightClicked()">Connect</button>
+            <button class = "contextItem" id = "contextDelete" onclick="deleteRightClicked()">Delete</button>
+        </div>
+
+        <div id = "blocker">
+            <h1 id = "editorExplanation" class = "grayText">Sorry, we couldn't find what you were looking for :(</h1>
+        </div>
+    </body>
+
+</html>

@@ -1,0 +1,101 @@
+#bodyDiv {
+    width: 100vw;
+    height: 100vh;
+    background-image: url(../images/SignUpSvg.svg);
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    background-size: 120vw;
+    position: absolute;
+    animation: backgroundBounce 10s ease-in-out 0s infinite alternate;
+}
+
+@keyframes backgroundBounce {
+    0%   {background-size: 100vw;}
+    100% {background-size: 140vw;}
+}
+
+#logo {
+    z-index: 20;
+    position: absolute;
+}
+
+#signInDiv {
+    position: relative;
+    width: 34vw;
+    margin-left: 30vw;
+    margin-top: 15vh;
+    background-color: white;
+    /* backdrop-filter: blur(10px); */
+    height: 34vw;
+    padding: 3vw;
+    border-radius: 2vw;
+    border-bottom: 1vw solid var(--highlights);
+    box-shadow: 0 0 1vw lightgray;
+}
+
+#signInDiv h1 {
+    font-size: 4vw;
+    color: var(--outlines);
+    text-align: center;
+}
+
+#signInDiv p {
+    font-size: 2vw;
+    margin-top: 2vw;
+    color: var(--outlines);
+    /* text-align: justify; */
+    padding-left: 2vw;
+    padding-right: 2vw;
+    padding-top: 2vw;
+    border-top: 0.5vw solid var(--highlights);
+}
+
+#signInButton img {
+    height: 3vw;
+    /* margin: 0.5vw; */
+    float: left;
+}
+
+#signInButton {
+    box-shadow: 0 0 10px lightgray;
+    width: 24vw;
+    height: 3vw;
+    border-radius: 0.5vw;
+    margin-top: 2vw;
+    margin-left: 4vw;
+    background-color: white;
+    transition: all 0.25s ease-in-out;
+    transition-property: background-color, box-shadow;
+    padding: 1vw;
+    /* height: 0; */
+    /* line-height: 0; */
+    /* display: flex; */
+    /* flex-direction: column; */
+    /* justify-content: center; */
+    /* align-items: center; */
+}
+
+#signInButton:hover {
+    /* background-color: #f3f3f3; */
+    box-shadow: 0 0 10px gray;
+}
+
+#signInButton:active {
+    /* background-color: #e4e4e4; */
+    box-shadow: 0 0 5px gray;
+}
+
+#signInButton h1 {
+    margin: 0.5vw;
+    font-size: 2vw;
+    color: var(--outlines);
+    text-align: center;
+    float: left;
+    text-align: center;
+}
+
+strong { font-weight: bold; }
+
+a:hover {
+    color: var(--highlights) !important;
+}

@@ -1,0 +1,42 @@
+#textContainer {
+    width: calc(100vw - 92vh);
+    height: 92vh;
+    flex: 1;
+}
+
+#newCardInput {
+    width: 80%;
+    margin-top: 5%;
+    margin-left: 10%;
+}
+
+#connectionsContainer {
+    height: 50%;
+    margin-top: 5%;
+    margin-left: 10%;
+    width: 83%;
+    overflow-y: scroll;
+}
+
+.textConnection {
+    padding: 5px;
+    border-radius: 5px;
+    color: var(--outlines);
+    font-size: 3vh;
+}
+
+.highlightedTextConnection {
+    background-color: var(--highlights);
+    color: white;
+}
+
+#descriptionEnter {
+    width: 80%;
+    margin-top: 5%;
+    margin-left: 10%;
+    height: 20%;
+}
+
+.greenInput:focus, .greenInput:hover, .greenTextarea:focus, .greenTextarea:hover {
+    box-shadow: 0 0 10px gray;
+}

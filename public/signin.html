@@ -1,0 +1,41 @@
+<!DOCTYPE html> 
+
+<html>
+
+    <head>
+        <title>Sign In</title>
+
+        <script defer src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+        <script defer src="https://www.gstatic.com/firebasejs/8.0.0/firebase-analytics.js"></script>
+        <script defer src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
+        <script defer src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
+
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+        <script defer src="js/fbConfig.js"></script>
+        <script defer src="js/signin.js"></script>
+
+        <link href="css/nav.css" rel="stylesheet">
+        <link href="css/signin.css" rel="stylesheet">
+
+    </head>
+
+    <body>
+        <img id = "logo" src = "images/circlelogo.png">
+            
+        <!-- <img id = "backgroundImage" src = "images/SignUpSvg.svg"/> -->
+        <div id = "bodyDiv">
+            <div id = "signInDiv">
+                <h1>Sign Up</h1>
+                <p><strong>Connection Circle:</strong> an application for creating concept maps and other connection based diagrams.</p>
+                <div id = "signInButton" onclick="signIn()"><img src = "images/btn_google_light_normal_ios.svg"><h1>Sign In With Google</h1></div>
+                <p style="text-align: center;"><a>about</a> | <a>policy</a> | <a>contact</a></p>
+            </div>
+        </div>
+        
+        
+        
+    </body>
+
+</html>
