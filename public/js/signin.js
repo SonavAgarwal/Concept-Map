@@ -42,7 +42,7 @@ function signIn() {
 firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
       console.log("user")
-        // window.location.href = "/home.html";
+      window.location.href = "/home.html";
     }
 })
 

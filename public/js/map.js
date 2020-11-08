@@ -6,6 +6,8 @@ var selectedConnectionNumber = -1;
 
 function setUpMap() {
 
+    $("#backToCircleButton").hide();
+
     //cards
     cards = names.map(createCardWithIndex);
     
@@ -25,6 +27,7 @@ function setWidth() {
 function createCardWithIndex(name, index) {
     var len = cards.length;
     var newCard = new Card(len, index, name);
+    $("#saveButton").html("Save");
     return newCard;
 }
 
@@ -32,6 +35,7 @@ function createCard(name) {
     var len = cards.length;
     var newCard = new Card(len, len, name);
     cards.push(newCard);
+    $("#saveButton").html("Save");
     return newCard;
 }
 
@@ -39,12 +43,16 @@ function createConnection(startCardNum, endCardNum) {
     var index = connections.length;
     var c = new Connection(cards[startCardNum], cards[endCardNum], "description", shift, index);
     connections.push(c);
+    renderDescriptionEnter();
+    $("#saveButton").html("Save");
     return c;
 }
 
 function createConnectionWithDescriptionAndNumber(startCardNum, endCardNum, description, index) {
     var c = new Connection(cards[startCardNum], cards[endCardNum], description, shift, index);
     connections.push(c);
+    renderDescriptionEnter();
+    $("#saveButton").html("Save");
     return c;
 }
 
@@ -67,10 +75,21 @@ function update() {
     .css('font-size', (width / 5) + "vh")
     .css('transform', "translate(" + (-0.5 * width - 1) + "vh, " + (-0.5 * width - 1) + "vh)");
 
+
     updateConnections();
 
+    renderDescriptionEnter();
     if (cards.length > 0) $("#editorExplanation").hide();
     $("#saveButton").html("Save");
+    $("#backToCircleButton").fadeOut(100);
+
+    // console.log(cards);
+    // console.log(connections);
+}
+
+function renderDescriptionEnter() {
+    if (connections.length > 0) $("#descriptionEnter").show();
+    else $("#descriptionEnter").hide();
 }
 
 function updateConnections() {
@@ -152,6 +171,7 @@ function dragElement(elmnt) {
     document.onmouseup = null;
     document.onmousemove = null;
     $("#mapContainer").css("box-shadow", "none");
+    $("#backToCircleButton").fadeIn(100);
   }
 }
 

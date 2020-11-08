@@ -8,7 +8,7 @@ firebase.auth().onAuthStateChanged(function(user) {
         currentUser = firebase.auth().currentUser;
         getProjects();
     } else {
-        console.log("no user")
+        window.location.href = "/signin.html";
     }
 });
 

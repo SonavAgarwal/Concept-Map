@@ -1,11 +1,24 @@
 $("#descriptionEnter").on('input',function(e){
-    console.log($(this).val());
-    console.log("selected" + selectedConnectionNumber)
-    console.log(connections)
     connections[selectedConnectionNumber].setText($(this).val());
     $("#saveButton").html("Save");
 });
 
-// window.setInterval(function () {
-//     console.log("selected" + selectedConnectionNumber)
-// }, 100);
+// from stack overflow
+function downloadConnections() {
+    var text = circleName + " Connections:\n";
+    for (var i = 0; i < connections.length; i++) {
+        text += connections[i].connectionElementText() + ": ";
+        text += connections[i].description() + "\n";
+    }
+
+    var downloadElement = document.createElement('a');
+    downloadElement.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    downloadElement.setAttribute('download', circleName);
+
+    downloadElement.style.display = 'none';
+    document.body.appendChild(downloadElement);
+
+    downloadElement.click();
+
+    document.body.removeChild(downloadElement);
+}

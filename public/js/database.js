@@ -6,6 +6,10 @@ var connectionTexts = ["message 1", "message 2", "message 3", "message 4", "mess
 var db = firebase.firestore();
 var currentUser;
 
+var viewer = false;
+var privacy = true;
+var noUser = false;
+
 $("#blocker").hide();
 
 firebase.auth().onAuthStateChanged(function (user) {
@@ -13,7 +17,10 @@ firebase.auth().onAuthStateChanged(function (user) {
         currentUser = firebase.auth().currentUser;
         getCircleData();
     } else {
-        // window.location.href = "/signin.html";
+        $("#homeButton").html("Sign Up").attr("onclick", "window.location.href = '/signin.html'");
+        $("#signOutButton").hide();
+        noUser = true;
+        getCircleData();
     }
 });
 
@@ -27,7 +34,17 @@ function getCircleData() {
         return;
     }
     
-    if (currentUser.uid != uid) $("#newCircleInput").hide();
+    if (noUser == true || currentUser.uid != uid)  {
+        viewer = true;
+        
+        $("#newCardInput").hide();
+        $("#saveButton").hide();
+        $("#downloadButton").hide();
+        $("#privacyButton").hide();
+        $('#descriptionEnter').attr('readonly', true);
+    }
+    
+    console.log("viewer: " + viewer);
 
     db.collection("users").doc(uid).collection("circles").doc(circleName).get()
     .then(function (doc) {
@@ -39,12 +56,15 @@ function getCircleData() {
             firstConnectionValues.length = 0;
             secondConnectionValues.length = 0;
             connectionTexts.length = 0;
+            privacy = true;
         } else {
             names = doc.data().names;
             firstConnectionValues = doc.data().firstConnectionValues;
             secondConnectionValues = doc.data().secondConnectionValues;
             connectionTexts = doc.data().connectionTexts;
+            privacy = doc.data().privacy;
         }
+        renderPrivacy();
         setUpMap();
     }).catch(function() {
         block();
@@ -57,6 +77,8 @@ function getCircleData() {
 function block() {
     $("#saveButton").hide();
     $("#circleTitle").hide();
+    $("#privacyButton").hide();
+    $("#downloadButton").hide();
     $("#blocker").fadeIn(100);
 }
 
@@ -84,10 +106,26 @@ function saveCircleData() {
         names: names,
         firstConnectionValues: firstConnectionValues,
         secondConnectionValues: secondConnectionValues,
-        connectionTexts: connectionTexts
+        connectionTexts: connectionTexts,
+        privacy: privacy
     }).then(function() {
         $("#saveButton").html("Saved");
     }).catch(function(error) {
         console.log(error);
     });
+}
+
+function togglePrivate() {
+    if (privacy == true) privacy = false;
+    else if (privacy == false) privacy = true;
+    $("#saveButton").html("Save");
+    renderPrivacy();
+}
+
+function renderPrivacy() {
+    if (privacy) {
+        $("#privacyImage").attr("src", "/images/privateicon.png");
+    } else {
+        $("#privacyImage").attr("src", "/images/publicicon.png");
+    }
 }

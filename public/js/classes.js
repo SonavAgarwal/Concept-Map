@@ -30,7 +30,7 @@ class Connection {
         this.connectionId = "text" + this.elemId;
         this.connectionElement.id = this.connectionId;
         $(this.connectionElement).addClass("textConnection");
-        $(this.connectionElement).html(this.card1.text + " & " + this.card2.text);
+        $(this.connectionElement).html(this.connectionElementText());
         $("#connectionsContainer").append(this.connectionElement);
 
         //select newly created connections
@@ -95,6 +95,10 @@ class Connection {
         return this.text;
     }
 
+    connectionElementText() {
+        return this.card1.text + " & " + this.card2.text;
+    }
+
     remove() {
         $(this.elem).remove();
         $(this.connectionElement).remove();
@@ -113,6 +117,14 @@ class Connection {
 
     setText(newText) {
         this.text = newText;
+    }
+
+    updateNumber(newNum) {
+        this.number = newNum; 
+        this.elemId = "connection" + this.number;
+        this.elem.id = this.elemId;
+        this.connectionId = "text" + this.elemId;
+        this.connectionElement.id = this.connectionId;
     }
 }
 
@@ -156,5 +168,10 @@ class Card {
 
     getName() {
         return this.text;
+    }
+
+    updateNumber(newNum) {
+        this.number = newNum;
+        this.elem.id = "card" + this.number;
     }
 }

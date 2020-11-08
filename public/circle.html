@@ -40,20 +40,23 @@
                 <h1 id = "circleTitle"></h1>
             </div>
 
+            <button class = "navButton invertedButton squareButton" onclick="togglePrivate()" id = "privacyButton"><img id = "privacyImage" class = "buttonIcon" src = "images/publicicon.png"></button>
+            <button class = "navButton invertedButton squareButton" onclick="downloadConnections()" id = "downloadButton"><img id = "downloadImage" class = "buttonIcon" src = "images/downloadicon.png"></button>
             <button class = "navButton invertedButton" onclick="saveCircleData()" id = "saveButton">Save</button>
-            <button class = "navButton" onclick="window.location.href = '/home.html'">Home</button>
-            <button class = "navButton" onclick="signout()">Sign Out</button>
+            <button class = "navButton" id = "homeButton" onclick="window.location.href = '/home.html'">Home</button>
+            <button class = "navButton" id = "signOutButton" onclick="signout()">Sign Out</button>
             
         </div>
 
         <div id = "editor">
             <div id = "mapContainer">
+                <button class = "navButton invertedButton squareButton" onclick="update()" id = "backToCircleButton"><img id = "circleImage" class = "buttonIcon" src = "images/CircleIcon.png"></button>
                 <h1 id = "editorExplanation" class = "grayText">Get started by adding some circles, then right click to add connections!</h1>
             </div>
             <div id = "textContainer">
                 <input class = "greenInput" id = "newCardInput" placeholder="add a circle..."/>
                 <div id = "connectionsContainer" class = "container"></div>
-                <textarea placeholder="description..." id = "descriptionEnter" class = "greenTextarea"></textarea>
+                <textarea placeholder="connection description..." id = "descriptionEnter" class = "greenTextarea"></textarea>
             </div>
         </div>
         

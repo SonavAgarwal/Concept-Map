@@ -9,6 +9,7 @@ var rightClicked;
 var textConnectionRightClicked;
 
 $("#mapContainer").bind("contextmenu", function (e) {
+    if (viewer) return;
     e.preventDefault();
 
     rightClicked = e.target;
@@ -29,6 +30,7 @@ $("#mapContainer").bind("contextmenu", function (e) {
 });
 
 $("#connectionsContainer").bind("contextmenu", function (e) {
+    if (viewer) return;
     e.preventDefault();
 
     textConnectionRightClicked = e.target;
@@ -88,6 +90,8 @@ function deleteRightClicked() {
                 connections.splice(i, 1);
             }
         }
+
+        updateNumbers();
     } else if (rightClicked != null && rightClicked.classList.contains("card")) {
 
         var cardNum = rightClicked.id.substring(4);
@@ -107,9 +111,10 @@ function deleteRightClicked() {
             }
             return true;
         });
+
+        updateNumbers();
     }
     
-    console.log(textConnectionRightClicked)
     if (textConnectionRightClicked != null && textConnectionRightClicked.classList.contains("textConnection")) {
         for (var i = 0; i < connections.length; i++) {
             if (connections[i].connectionElement == textConnectionRightClicked) {
@@ -117,12 +122,24 @@ function deleteRightClicked() {
                 connections.splice(i, 1);
             }
         }
+
+        updateNumbers();
     }
+    
 
     update();
     $("#contextMenu").hide(100);
 }
 
+function updateNumbers() {
+    for (var i = 0; i < cards.length; i++) {
+        cards[i].updateNumber(i);
+    }
+
+    for (var i = 0; i < connections.length; i++) {
+        connections[i].updateNumber(i);
+    }
+}
 
 function connectRightClicked() {
     if (rightClicked.classList.contains("card")) {
