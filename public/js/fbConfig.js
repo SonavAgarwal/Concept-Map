@@ -13,7 +13,7 @@ var firebaseConfig = {
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-firebase.analytics();
+// firebase.analytics();
 
 function signout() {
     firebase.auth().signOut().then(function() {

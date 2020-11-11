@@ -25,8 +25,9 @@
 
     padding: 1vh;
 
-    /* max-width: 30vh; */
-    /* max-height: 30vh; */
+    
+    word-break: break-word;
+    overflow: hidden;
 }
 
 .card:hover {

@@ -2,6 +2,9 @@ var names = ["hola", "bonjour", "ciao", "hello", "aloha", "nihao", "words", "the
 var firstConnectionValues = [[1, 2], [3, 4], [1, 3], [1, 4], [1, 0], [0, 2], [0, 3], [4, 2], [0, 6], [7, 6], [4, 6], [2, 7]];
 var secondConnectionValues = [];
 var connectionTexts = ["message 1", "message 2", "message 3", "message 4", "message 5", "message 6", "message 7", "message 8", "message 8", "message 8", "message 8", "message 8", "message 8", "message 8", "message 8"];
+var cardColors = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+const numToColor = ["white", "indianred", "lightsalmon", "moccasin", "darkseagreen", "steelblue", "plum", "pink"];
+const whiteTextColors = [1, 5];
 
 var db = firebase.firestore();
 var currentUser;
@@ -42,6 +45,13 @@ function getCircleData() {
         $("#downloadButton").hide();
         $("#privacyButton").hide();
         $('#descriptionEnter').attr('readonly', true);
+
+    }
+
+    if (!viewer) {
+        window.onbeforeunload = function(){
+            if ($("#saveButton").html() == "Save") return 'Are you sure you want to leave? You may lose unsaved progress.';
+        };
     }
     
     console.log("viewer: " + viewer);
@@ -56,17 +66,31 @@ function getCircleData() {
             firstConnectionValues.length = 0;
             secondConnectionValues.length = 0;
             connectionTexts.length = 0;
+            cardColors.length = 0;
+
             privacy = true;
         } else {
             names = doc.data().names;
             firstConnectionValues = doc.data().firstConnectionValues;
             secondConnectionValues = doc.data().secondConnectionValues;
             connectionTexts = doc.data().connectionTexts;
+            
+            cardColors.length = 0;
+            if (doc.data().cardColors == undefined) {
+                for (var i = 0; i < names.length; i++) {
+                    cardColors.push(0);
+                }
+            } else {
+                cardColors = doc.data().cardColors;
+            }
+
+            console.log(doc.data().privacy)
             privacy = doc.data().privacy;
         }
         renderPrivacy();
         setUpMap();
-    }).catch(function() {
+    }).catch(function(e) {
+        console.log(e);
         block();
     });
 
@@ -90,9 +114,11 @@ function saveCircleData() {
     firstConnectionValues.length = 0;
     secondConnectionValues.length = 0;
     connectionTexts.length = 0;
+    cardColors.length = 0;
     
     cards.forEach(card => {
         names.push(card.getName());
+        cardColors.push(card.colorNum);
     });
 
     connections.forEach(con => {
@@ -107,6 +133,7 @@ function saveCircleData() {
         firstConnectionValues: firstConnectionValues,
         secondConnectionValues: secondConnectionValues,
         connectionTexts: connectionTexts,
+        cardColors: cardColors,
         privacy: privacy
     }).then(function() {
         $("#saveButton").html("Saved");
@@ -117,7 +144,7 @@ function saveCircleData() {
 
 function togglePrivate() {
     if (privacy == true) privacy = false;
-    else if (privacy == false) privacy = true;
+    else privacy = true;
     $("#saveButton").html("Save");
     renderPrivacy();
 }

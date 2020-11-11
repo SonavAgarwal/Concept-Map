@@ -7,6 +7,9 @@ class Connection {
         this.connectionElement = document.createElement("p");
         this.shift = shift;
         this.number = number;
+
+        //for switching cards
+        this.updatedNum = false;
         
         //drawing connection
         this.elemId = "connection" + this.number;
@@ -126,15 +129,32 @@ class Connection {
         this.connectionId = "text" + this.elemId;
         this.connectionElement.id = this.connectionId;
     }
+
+    // replaceCard(numToReplace, newNum) {
+    //     if (this.updatedNum == true) {
+    //         if (this.card1.number == this.card2.number) {
+    //             this.card1 = cards[newNum];
+    //         }
+    //         this.updatedNum = false;
+    //     } else {
+    //         if (this.card1.number == numToReplace) {
+    //             this.card1 = cards[newNum];
+    //         } else if (this.card2.number == numToReplace) {
+    //             this.card2 = cards[newNum];
+    //         }
+    //         this.updatedNum = true;
+    //     }
+    // }
 }
 
 class Card {
-    constructor (divisions, number, text) {
+    constructor (divisions, number, text, colorNum) {
         this.divisions = divisions;
 
         this.angle = number * Math.PI * 2 / divisions;
         this.number = number;
         this.text = text;
+        this.colorNum = colorNum;
 
 
         this.elem = document.createElement("div");
@@ -147,6 +167,7 @@ class Card {
 
         this.elem.style.top = (Math.sin(this.angle) * 0.9 * 38 + 0.9 * 50) + (-0.5 * width - 1) + "vh";
         this.elem.style.left = (Math.cos(this.angle) * 0.9 * 38 + 0.9 * 50) + (-0.5 * width - 1) + "vh";
+        this.renderColor();
 
         dragElement(this.elem);
 
@@ -173,5 +194,16 @@ class Card {
     updateNumber(newNum) {
         this.number = newNum;
         this.elem.id = "card" + this.number;
+    }
+
+    setColor(colorName) {
+        this.colorNum = numToColor.indexOf(colorName);
+        this.renderColor();
+    }
+
+    renderColor() {
+        if (whiteTextColors.includes(this.colorNum)) this.elem.style.color = "white";
+        else this.elem.style.color = "var(--outlines)";
+        this.elem.style.backgroundColor = numToColor[this.colorNum];
     }
 }

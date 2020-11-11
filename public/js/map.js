@@ -26,14 +26,15 @@ function setWidth() {
 
 function createCardWithIndex(name, index) {
     var len = cards.length;
-    var newCard = new Card(len, index, name);
+    var colorNum = cardColors[index];
+    var newCard = new Card(len, index, name, colorNum);
     $("#saveButton").html("Save");
     return newCard;
 }
 
 function createCard(name) {
     var len = cards.length;
-    var newCard = new Card(len, len, name);
+    var newCard = new Card(len, len, name, 0);
     cards.push(newCard);
     $("#saveButton").html("Save");
     return newCard;
@@ -63,16 +64,12 @@ function setConnectionShift() {
 function update() {
     setWidth();
 
-    var i = 0;
-    cards.forEach(c => {
-        c.update(cards.length, i);
-        i++;
-    });
+    updateCardNums();
 
     $(".card")
     .css('width', width + "vh")
     .css('height', width + "vh")
-    .css('font-size', (width / 5) + "vh")
+    .css('font-size', (width / 5.5) + "vh")
     .css('transform', "translate(" + (-0.5 * width - 1) + "vh, " + (-0.5 * width - 1) + "vh)");
 
 
@@ -85,6 +82,14 @@ function update() {
 
     // console.log(cards);
     // console.log(connections);
+}
+
+function updateCardNums() {
+    var i = 0;
+    cards.forEach(c => {
+        c.update(cards.length, i);
+        i++;
+    });
 }
 
 function renderDescriptionEnter() {

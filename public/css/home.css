@@ -25,6 +25,7 @@
     margin: 0;
     background-color: var(--highlights);
     box-shadow: 0 0 10px var(--outlines);
+    display: flex;
     /* border-radius: 20px; */
 }
 
@@ -35,6 +36,7 @@
     color: white;
     padding: 2vw;
     border-radius: 1vw;
+    flex: 1;
 }
 
 .projectCard p {

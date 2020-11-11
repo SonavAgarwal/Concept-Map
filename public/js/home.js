@@ -25,13 +25,14 @@ function getProjects() {
 function renderProjects() {
     Object.keys(circles).forEach(function (key) {
         var value = circles[key];
-        var id = value.replace(/\s+/g, '');
-        var link = $("<a></a>")
-        .attr('href', "/circle.html?" + "uid=" + currentUser.uid + "&name=" + key)
-        .appendTo(document.body).appendTo(document.body);
+        var id = key.replace(/\s+/g, '');
+        var href = "/circle.html?" + "uid=" + currentUser.uid + "&name=" + key;
+        // var link = $("<a></a>")
+        // .attr('href', "/circle.html?" + "uid=" + currentUser.uid + "&name=" + key)
+        // .appendTo(document.body).appendTo(document.body);
 
-        $("<div><div class='greenTitleClass'><h1>" + key + "</h1></div><p>" + value + "</p></div>")
-        .addClass("projectCard").appendTo(link);
+        $("<div id = '" + id + "'><div class='greenTitleClass'><h1>" + key + "</h1><button class = 'navButton invertedButton squareButton' onclick='openProject(this.value)' value = '" + href + "'><img id = 'openProject' class = 'buttonIcon' src = 'images/openicon.png'></button><button class = 'navButton invertedButton squareButton' onclick='deleteProject(this.value)' value = '" + key + "'><img id = 'trashProject' class = 'buttonIcon' src = 'images/trashicon.png'></button></div><p>" + value + "</p></div>")
+        .addClass("projectCard").appendTo(document.body);
         
     });
     // $("<div></div>").attr("height", "10vw").attr("width", "10vw").attr("background-color", "white").appendTo(document.body);
@@ -69,4 +70,27 @@ function finishCreateNew() {
     .then(function () {
         window.location.href = "/circle.html?" + "uid=" + currentUser.uid + "&name=" + name;
     });
+}
+
+function deleteProject(projectName) {
+
+    var confirmation = prompt("Type the name of the project to confirm:");
+
+    if (confirmation != projectName) return;
+
+    db.collection("users").doc(currentUser.uid).collection("circles").doc(projectName).delete().then(function() {
+        // console.log("Document successfully deleted!");
+    }).catch(function(error) {
+        console.error("Error removing document: ", error);
+    });
+
+    db.collection("users").doc(currentUser.uid).collection("circles").doc("circlesReference").update({
+        [projectName]: firebase.firestore.FieldValue.delete()
+    }).then(function() {
+        $("#" + projectName.replace(/\s+/g, '')).hide("slow");
+    });
+}
+
+function openProject(url) {
+    window.location.href = url;
 }
