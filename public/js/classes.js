@@ -99,7 +99,7 @@ class Connection {
     }
 
     connectionElementText() {
-        return this.card1.text + " & " + this.card2.text;
+        return (this.number + 1) + ": " + this.card1.text + " & " + this.card2.text;
     }
 
     remove() {
