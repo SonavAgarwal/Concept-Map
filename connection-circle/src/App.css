@@ -47,6 +47,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+
+    z-index: 100;
 }
 
 .circle::-webkit-scrollbar {
@@ -76,10 +78,21 @@
     stroke: var(--gray);
     stroke-width: 0.3rem;
     transition: all 0.3s ease;
+    pointer-events: all;
+}
+
+.connection-line-selected {
+    stroke: var(--primary-color);
+    filter: drop-shadow(0 0 0.5rem var(--primary-color));
 }
 
 .connection-line:hover {
     stroke: var(--primary-color);
+}
+
+.connection-line-svg {
+    position: absolute;
+    pointer-events: none;
 }
 
 .editor {
@@ -133,4 +146,25 @@
     width: 100%;
     border: none;
     outline: none;
+}
+
+.connection-title {
+    padding: var(--margin);
+    border-radius: var(--margin);
+    /* margin-bottom: var(--margin); */
+    font-weight: bold;
+    transition: all 0.3s ease;
+    color: var(--gray);
+    cursor: pointer;
+}
+
+.connection-title:hover {
+    /* background-color: var(--primary-color);
+    color: white; */
+    opacity: 0.5;
+}
+
+.connection-title-selected {
+    background-color: var(--primary-color);
+    color: white;
 }

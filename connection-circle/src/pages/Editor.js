@@ -3,6 +3,10 @@ import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Circle from "../components/circle/Circle";
 import Connection from "../components/circle/Connection";
 import testingdata from "../testingdata";
+import uniqid from "uniqid";
+import ConnectionTitle from "../components/circle/ConnectionTitle";
+import isUrl from "is-url";
+import { Item, Menu, Separator, useContextMenu } from "react-contexify";
 
 function useForceUpdate() {
     const [value, setValue] = useState(0); // integer state
@@ -12,6 +16,22 @@ function useForceUpdate() {
 function Editor(props) {
     const forceUpdate = useForceUpdate();
 
+    const { show } = useContextMenu({
+        id: "circle-menu-id",
+    });
+    function handleContextMenu(event) {
+        if (event) {
+            console.log(event);
+            event.preventDefault();
+            show({
+                event,
+                props: {
+                    key: "value",
+                },
+            });
+        }
+    }
+
     const newCardInput = useRef();
 
     const data = testingdata;
@@ -19,6 +39,11 @@ function Editor(props) {
 
     const [circleData, setCircleData] = useState([]);
     const [circleDataMap, setCircleDataMap] = useState({});
+    const [connectionData, setConnectionData] = useState([]);
+    const [connectionDataMap, setConnectionDataMap] = useState({});
+
+    const [selectedConnection, setSelectedConnection] =
+        useState("con-alsdjfwie");
 
     useEffect(
         function () {
@@ -32,6 +57,18 @@ function Editor(props) {
 
             setCircleData(circleDataTemp);
             setCircleDataMap(circleDataMapTemp);
+
+            let connectionDataTemp = [];
+            let connectionDataMapTemp = {};
+            for (let connection of data.connections) {
+                let workingCopy = { ...connection };
+                connectionDataTemp.push(workingCopy);
+                connectionDataMapTemp[connection.id] = workingCopy;
+            }
+
+            setConnectionData(connectionDataTemp);
+            setConnectionDataMap(connectionDataMapTemp);
+
             console.log("SETTING THING");
             console.log(circleDataMapTemp);
         },
@@ -42,6 +79,27 @@ function Editor(props) {
         let targetObject = circleDataMap[circleID];
         Object.assign(targetObject, newData);
         forceUpdate();
+    }
+
+    function addCircle(type, content) {
+        let id = "cir-" + uniqid();
+        let newCircleData = {
+            id: id,
+            type: type,
+            content: content,
+            color: "#FFFFFF",
+            x: 10,
+            y: 10,
+        };
+
+        setCircleData([...circleData, newCircleData]);
+        circleDataMap[id] = newCircleData;
+
+        forceUpdate();
+    }
+
+    function selectConnection(connectionID) {
+        setSelectedConnection(connectionID);
     }
 
     return (
@@ -60,12 +118,17 @@ function Editor(props) {
                                 <Circle
                                     data={circle}
                                     updateCircle={updateCircle}
+                                    showContextMenu={handleContextMenu}
                                 />
                             ))}
-                            {data.connections.map((connection) => (
+                            {connectionData.map((connection) => (
                                 <Connection
                                     data={connection}
                                     circleData={circleDataMap}
+                                    selected={
+                                        selectedConnection == connection.id
+                                    }
+                                    selectConnection={selectConnection}
                                 />
                             ))}
                         </div>
@@ -77,6 +140,10 @@ function Editor(props) {
                     <form
                         onSubmit={function (e) {
                             e.preventDefault();
+                            let type = "text";
+                            if (isUrl(newCardInput.current.value))
+                                type = "image";
+                            addCircle(type, newCardInput.current.value);
                             console.log(newCardInput.current.value);
                             newCardInput.current.value = "";
                         }}
@@ -89,16 +156,49 @@ function Editor(props) {
                     </form>
                 </div>
                 <div className="card light-shadow connections-card">
-                    akjsdfn sdajf n
-                    <button
-                        onClick={function () {
-                            console.log(circleData);
-                        }}
-                    >
-                        click
-                    </button>
+                    {connectionData.map((connection) => (
+                        <ConnectionTitle
+                            data={connection}
+                            circleData={circleDataMap}
+                            selected={selectedConnection == connection.id}
+                            selectConnection={selectConnection}
+                        />
+                    ))}
                 </div>
+                <div
+                    className="card light-shadow connection-text-card"
+                    onContextMenu={show}
+                >
+                    {connectionDataMap[selectedConnection]?.text}
+                </div>
+                <button
+                    onClick={function () {
+                        console.log(circleData);
+                        console.log(circleDataMap);
+                    }}
+                >
+                    click
+                </button>
             </div>
+            <Menu id={"circle-menu-id"}>
+                <Item
+                    onClick={function () {
+                        console.log("hey");
+                    }}
+                >
+                    Item 1
+                </Item>
+                <Item
+                    onClick={function () {
+                        console.log("hey");
+                    }}
+                >
+                    Item 2
+                </Item>
+                <Separator />
+                <Item disabled>Disabled</Item>
+                <Separator />
+            </Menu>
         </div>
     );
 }

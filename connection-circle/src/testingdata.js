@@ -30,11 +30,25 @@ const testingdata = {
             x: 400,
             y: 100,
         },
+        {
+            id: "id4",
+            type: "image",
+            content: "https://google.com",
+            color: "#1121F1",
+            x: 400,
+            y: 600,
+        },
     ],
     connections: [
         {
+            id: "con-alsdjfwie",
             circles: ["id1", "id2"],
             text: "This is the text of the connection between a and b.",
+        },
+        {
+            id: "con-gui3rrhovidn",
+            circles: ["id3", "id2"],
+            text: "This is the text of the connection between c and b.",
         },
     ],
 };

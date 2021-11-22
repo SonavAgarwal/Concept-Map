@@ -41,9 +41,16 @@ function Connection(props) {
         <svg
             width={Math.abs(x1 - x2) + Math.min(x1, x2)}
             height={Math.abs(y1 - y2) + Math.min(y1, y2)}
+            className="connection-line-svg"
+            onClick={function () {
+                props.selectConnection(props.data?.id);
+            }}
         >
             <line
-                className="connection-line hover-shadow"
+                className={
+                    "connection-line hover-shadow " +
+                    (props.selected ? "connection-line-selected" : "")
+                }
                 x1={x1}
                 y1={y1}
                 x2={x2}
