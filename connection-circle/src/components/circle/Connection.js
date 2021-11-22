@@ -1,34 +1,35 @@
 import React, { useEffect, useState } from "react";
 
 function Connection(props) {
-    const [x1, setX1] = useState(0);
-    const [x2, setX2] = useState(0);
-    const [y1, setY1] = useState(0);
-    const [y2, setY2] = useState(0);
-    const [dx, setDx] = useState(0);
-    const [dy, setDy] = useState(0);
+    // const [x1, setX1] = useState(0);
+    // const [x2, setX2] = useState(0);
+    // const [y1, setY1] = useState(0);
+    // const [y2, setY2] = useState(0);
 
-    useEffect(
-        function () {
-            let x1Temp = props.circleData[props.data.circles[0]]?.x;
-            let x2Temp = props.circleData[props.data.circles[1]]?.x;
-            let y1Temp = props.circleData[props.data.circles[0]]?.y;
-            let y2Temp = props.circleData[props.data.circles[1]]?.y;
+    let x1 = props.circleData[props.data.circles[0]]?.x;
+    let x2 = props.circleData[props.data.circles[1]]?.x;
+    let y1 = props.circleData[props.data.circles[0]]?.y;
+    let y2 = props.circleData[props.data.circles[1]]?.y;
+    let halfCircle = convertRemToPixels(4);
+    x1 += halfCircle;
+    x2 += halfCircle;
+    y1 += halfCircle;
+    y2 += halfCircle;
 
-            let halfCircle = convertRemToPixels(4);
+    // useEffect(
+    //     function () {
+    //         let x1Temp = props.circleData[props.data.circles[0]]?.x;
+    //         let x2Temp = props.circleData[props.data.circles[1]]?.x;
+    //         let y1Temp = props.circleData[props.data.circles[0]]?.y;
+    //         let y2Temp = props.circleData[props.data.circles[1]]?.y;
 
-            x1Temp += halfCircle;
-            x2Temp += halfCircle;
-            y1Temp += halfCircle;
-            y2Temp += halfCircle;
-
-            setX1(x1Temp);
-            setX2(x2Temp);
-            setY1(y1Temp);
-            setY2(y2Temp);
-        }
-        // [props.circleData, props.data]
-    );
+    //         setX1(x1Temp);
+    //         setX2(x2Temp);
+    //         setY1(y1Temp);
+    //         setY2(y2Temp);
+    //     }
+    //     // [props.circleData, props.data]
+    // );
 
     function convertRemToPixels(rem) {
         return (

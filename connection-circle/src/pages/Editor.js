@@ -32,6 +32,8 @@ function Editor(props) {
     }
 
     function startConnectCircle() {
+        setIsDrawingConnection(true);
+        console.log("starting connections");
         let unavailableCirclesTemp = [];
         for (let connection of connectionData) {
             if (connection.circles.includes(clickedCircle)) {
@@ -47,7 +49,7 @@ function Editor(props) {
     }
 
     function handleCircleClick(event, newClickedCircle) {
-        if (clickedCircle) {
+        if (clickedCircle && isDrawingConnection) {
             if (!unavailableCircles.includes(newClickedCircle)) {
                 createConnection(clickedCircle, newClickedCircle);
             }
@@ -75,6 +77,7 @@ function Editor(props) {
     function exitConnectCircle() {
         setUnavailableCircles([]);
         setClickedCircle("");
+        setIsDrawingConnection(false);
     }
 
     const newCardInput = useRef();
@@ -89,6 +92,7 @@ function Editor(props) {
     const [selectedConnection, setSelectedConnection] = useState("");
 
     const [clickedCircle, setClickedCircle] = useState("");
+    const [isDrawingConnection, setIsDrawingConnection] = useState(false);
     const [unavailableCircles, setUnavailableCircles] = useState([]);
 
     const [connectionTextInput, setConnectionTextInput] = useState("");
@@ -197,8 +201,9 @@ function Editor(props) {
                         contentStyle={{ width: "100%" }}
                     >
                         <div class="editor-canvas">
-                            {circleData.map((circle) => (
+                            {circleData.map((circle, index) => (
                                 <Circle
+                                    key={index.toString()}
                                     data={circle}
                                     updateCircle={updateCircle}
                                     showContextMenu={handleContextMenu}
@@ -240,27 +245,48 @@ function Editor(props) {
                             placeholder={"Add a card..."}
                         ></input>
                     </form>
-                </div>
-                <div className="card light-shadow connections-card">
-                    {connectionData.map((connection) => (
-                        <ConnectionTitle
-                            data={connection}
-                            circleData={circleDataMap}
-                            selected={selectedConnection == connection.id}
-                            selectConnection={selectConnection}
-                        />
-                    ))}
-                </div>
-                <div className="card light-shadow connection-text-card">
-                    <textarea
-                        className="connection-text"
-                        placeholder="Type connection text here..."
-                        value={connectionTextInput}
-                        onChange={function (e) {
-                            setConnectionTextInput(e.target.value);
+                    {/* <button
+                        onClick={function () {
+                            forceUpdate();
                         }}
-                    />
+                    >
+                        force update
+                    </button>
+                    <button
+                        onClick={function () {
+                            console.log(circleData);
+                            console.log(circleDataMap);
+                            console.log(connectionData);
+                            console.log(connectionDataMap);
+                        }}
+                    >
+                        print
+                    </button> */}
                 </div>
+                {connectionData.length > 0 && (
+                    <div className="card light-shadow connections-card">
+                        {connectionData.map((connection) => (
+                            <ConnectionTitle
+                                data={connection}
+                                circleData={circleDataMap}
+                                selected={selectedConnection == connection.id}
+                                selectConnection={selectConnection}
+                            />
+                        ))}
+                    </div>
+                )}
+                {selectedConnection && (
+                    <div className="card light-shadow connection-text-card">
+                        <textarea
+                            className="connection-text"
+                            placeholder="Type connection text here..."
+                            value={connectionTextInput}
+                            onChange={function (e) {
+                                setConnectionTextInput(e.target.value);
+                            }}
+                        />
+                    </div>
+                )}
             </div>
             <Menu animation={"scale"} id={"circle-menu-id"}>
                 <Item
@@ -289,16 +315,26 @@ function Editor(props) {
                         let newCircles = circleData.filter(
                             (cir) => cir.id != clickedCircle
                         );
-                        circleDataMap[clickedCircle] = undefined;
-                        setCircleData(newCircles);
 
-                        let newConnections = connectionData.filter(
-                            (con) => !con?.circles?.includes(clickedCircle)
-                        );
-                        setConnectionData(newConnections);
+                        let newConnections = connectionData.filter((con) => {
+                            if (con?.circles?.includes(clickedCircle)) {
+                                delete connectionDataMap[con.id];
+                                return false;
+                            }
+                            return true;
+                        });
+
+                        delete circleDataMap[clickedCircle];
+
+                        setCircleData(newCircles);
+                        forceUpdate();
 
                         setClickedCircle("");
+                        setConnectionData(newConnections);
                         forceUpdate();
+
+                        // setTimeout(() => {
+                        // }, 100);
                     }}
                 >
                     Delete
