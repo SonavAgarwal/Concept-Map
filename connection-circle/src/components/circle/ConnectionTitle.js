@@ -14,6 +14,7 @@ function ConnectionTitle(props) {
 
     return (
         <div
+            id={props.data?.id + "-title"}
             className={
                 "connection-title " +
                 (props.selected ? "connection-title-selected" : "")
