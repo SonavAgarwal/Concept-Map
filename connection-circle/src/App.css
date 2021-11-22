@@ -6,6 +6,10 @@
 
 :root {
     --background-color: white;
+    --navbar-height: 4rem;
+    --margin: 1rem;
+    --primary-color: #00d7b5;
+    --gray: rgb(49, 49, 49);
     font-family: "Open Sans", sans-serif;
 }
 
@@ -19,15 +23,114 @@
     box-shadow: 0rem 0rem 0.5rem rgba(0, 0, 0, 0.25);
 }
 
+.hover-shadow {
+    transition: filter 0.3s ease;
+}
+.hover-shadow:hover {
+    filter: drop-shadow(0 0 0.5rem var(--primary-color));
+}
+
 .navbar {
     width: 100vw;
-    height: 4rem;
+    height: var(--navbar-height);
     background-color: var(--background-color);
 }
 
 .circle {
-    width: 8rem;
+    position: absolute;
+    width: 6rem;
+    padding: 1rem;
     aspect-ratio: 1/1;
+    overflow: scroll;
     background-color: var(--background-color);
     border-radius: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.circle::-webkit-scrollbar {
+    display: none;
+}
+
+.circle-text {
+    text-align: center;
+    outline: none;
+    /* border: none;
+    resize: none;
+    margin: 0;
+    vertical-align: bottom;
+    padding: 0; */
+    min-width: 1rem;
+}
+
+.circle-image {
+    /* object-fit: contain;
+    width: 100%;
+    height: 100%; */
+    background-size: cover;
+    background-position: center;
+}
+
+.connection-line {
+    stroke: var(--gray);
+    stroke-width: 0.3rem;
+    transition: all 0.3s ease;
+}
+
+.connection-line:hover {
+    stroke: var(--primary-color);
+}
+
+.editor {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.editor-canvas {
+    min-width: 100%;
+    min-height: calc(100vh - var(--navbar-height));
+    overflow: hidden;
+    position: relative;
+}
+
+.editor-canvas-wrapper {
+    /* width: calc(100vw - 30rem); */
+    flex: 1;
+}
+
+.editor-sidebar {
+    position: absolute;
+    right: 0;
+    width: 40rem;
+    height: calc(100vh - var(--navbar-height));
+    background-color: transparent;
+    pointer-events: none;
+    /* z-index: 100; */
+    /* flex: 1; */
+}
+
+.card {
+    margin-left: var(--margin);
+    margin-top: var(--margin);
+    margin-right: var(--margin);
+    background-color: var(--background-color);
+    box-sizing: border-box;
+    padding: var(--margin);
+    border-radius: var(--margin);
+    pointer-events: all;
+}
+
+.add-circle-card {
+}
+
+.connections-card {
+}
+
+.input {
+    font-size: 1rem;
+    width: 100%;
+    border: none;
+    outline: none;
 }
