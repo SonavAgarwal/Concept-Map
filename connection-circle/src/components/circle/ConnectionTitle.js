@@ -23,6 +23,7 @@ function ConnectionTitle(props) {
                 props.selectConnection(props.data?.id);
             }}
         >
+            <div className="connection-title-top"></div>
             {getText()}
         </div>
     );

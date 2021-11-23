@@ -2,6 +2,7 @@
 
 * {
     font-family: "Open Sans", sans-serif;
+    scroll-behavior: smooth;
 }
 
 :root {
@@ -220,6 +221,7 @@
     transition: all 0.3s ease;
     color: var(--gray);
     cursor: pointer;
+    position: relative;
 }
 
 .connection-title:hover {
@@ -231,6 +233,12 @@
 .connection-title-selected {
     background-color: var(--primary-color);
     color: white;
+}
+
+.connection-title-top {
+    position: absolute;
+    height: 1rem;
+    top: -1rem;
 }
 
 .connection-text {

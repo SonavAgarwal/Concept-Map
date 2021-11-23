@@ -190,7 +190,7 @@ function Editor(props) {
         function () {
             document
                 .getElementById(selectedConnection + "-title")
-                ?.scrollIntoView();
+                ?.firstChild?.scrollIntoView();
         },
         [selectConnection]
     );
