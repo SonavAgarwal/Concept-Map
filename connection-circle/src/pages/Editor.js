@@ -17,6 +17,7 @@ import { auth, firestore } from "../firebase";
 import { useParams } from "react-router";
 import Navbar from "../components/Navbar";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useBeforeunload } from "react-beforeunload";
 
 function useForceUpdate() {
     const [value, setValue] = useState(0); // integer state
@@ -25,6 +26,10 @@ function useForceUpdate() {
 
 function Editor(props) {
     const forceUpdate = useForceUpdate();
+
+    useBeforeunload((event) => {
+        if (!saved) return "unsaved changes";
+    });
 
     const params = useParams();
     const [user, userLoading] = useAuthState(auth);
