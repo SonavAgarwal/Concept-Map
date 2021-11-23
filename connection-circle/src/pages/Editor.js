@@ -18,6 +18,43 @@ import { useParams } from "react-router";
 import Navbar from "../components/Navbar";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useBeforeunload } from "react-beforeunload";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { createPortal } from "react-dom";
+
+const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+
+    return result;
+};
+
+const useDraggableInPortal = () => {
+    const self = useRef({}).current;
+
+    useEffect(() => {
+        const div = document.createElement("div");
+        div.style.position = "absolute";
+        div.style.pointerEvents = "none";
+        div.style.top = "0";
+        div.style.width = "100%";
+        div.style.height = "100%";
+        self.elt = div;
+        document.body.appendChild(div);
+        return () => {
+            document.body.removeChild(div);
+        };
+    }, [self]);
+
+    return (render) =>
+        (provided, ...args) => {
+            const element = render(provided, ...args);
+            if (provided.draggableProps.style.position === "fixed") {
+                return createPortal(element, self.elt);
+            }
+            return element;
+        };
+};
 
 function useForceUpdate() {
     const [value, setValue] = useState(0); // integer state
@@ -26,6 +63,8 @@ function useForceUpdate() {
 
 function Editor(props) {
     const forceUpdate = useForceUpdate();
+
+    const renderDraggable = useDraggableInPortal();
 
     useBeforeunload((event) => {
         if (!saved) return "unsaved changes";
@@ -54,6 +93,23 @@ function Editor(props) {
             setClickedConnection(itemID);
         }
         show(event);
+    }
+
+    function onDragEnd(result) {
+        // dropped outside the list
+        if (!result.destination) {
+            return;
+        }
+
+        const items = reorder(
+            connectionData,
+            result.source.index,
+            result.destination.index
+        );
+
+        setConnectionData(items);
+        forceUpdate();
+        if (result.source.index != result.destination.index) setSaved(false);
     }
 
     function startConnectCircle() {
@@ -159,6 +215,15 @@ function Editor(props) {
 
         setConnectionData(connectionDataTemp);
         setConnectionDataMap(connectionDataMapTemp);
+    }
+
+    function switchConnectionDirection(connectionID) {
+        let con = connectionDataMap[connectionID];
+        if (!con) return;
+
+        con.circles.reverse();
+        forceUpdate();
+        setSaved(false);
     }
 
     function updateCircle(circleID, newData) {
@@ -405,16 +470,71 @@ function Editor(props) {
                         </div>
                         {connectionData.length > 0 && (
                             <div className="card light-shadow connections-card">
-                                {connectionData.map((connection) => (
-                                    <ConnectionTitle
-                                        data={connection}
-                                        circleData={circleDataMap}
-                                        selected={
-                                            selectedConnection == connection.id
-                                        }
-                                        selectConnection={selectConnection}
-                                    />
-                                ))}
+                                <DragDropContext onDragEnd={onDragEnd}>
+                                    <Droppable droppableId="droppable">
+                                        {(provided, snapshot) => (
+                                            <div
+                                                {...provided.droppableProps}
+                                                ref={provided.innerRef}
+                                            >
+                                                {connectionData.map(
+                                                    (connection, index) => (
+                                                        <Draggable
+                                                            key={connection.id}
+                                                            draggableId={
+                                                                connection.id
+                                                            }
+                                                            index={index}
+                                                        >
+                                                            {renderDraggable(
+                                                                (
+                                                                    provided,
+                                                                    snapshot
+                                                                ) => (
+                                                                    <div
+                                                                        ref={
+                                                                            provided.innerRef
+                                                                        }
+                                                                        {...provided.draggableProps}
+                                                                        {...provided.dragHandleProps}
+                                                                        className="connection-title-wrapper"
+                                                                        style={{
+                                                                            ...provided
+                                                                                .draggableProps
+                                                                                .style,
+                                                                        }}
+                                                                    >
+                                                                        <ConnectionTitle
+                                                                            data={
+                                                                                connection
+                                                                            }
+                                                                            circleData={
+                                                                                circleDataMap
+                                                                            }
+                                                                            selected={
+                                                                                selectedConnection ==
+                                                                                connection.id
+                                                                            }
+                                                                            selectConnection={
+                                                                                selectConnection
+                                                                            }
+                                                                            switchConnectionDirection={
+                                                                                switchConnectionDirection
+                                                                            }
+                                                                        />
+                                                                    </div>
+                                                                )
+                                                            )}
+                                                        </Draggable>
+                                                    )
+                                                )}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                                {/* {connectionData.map((connection) => (
+                                ))} */}
                             </div>
                         )}
                         {selectedConnection && (

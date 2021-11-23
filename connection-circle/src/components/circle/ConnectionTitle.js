@@ -19,8 +19,12 @@ function ConnectionTitle(props) {
                 "connection-title " +
                 (props.selected ? "connection-title-selected" : "")
             }
-            onClick={function () {
-                props.selectConnection(props.data?.id);
+            onClick={function (e) {
+                if (e.detail === 2) {
+                    props.switchConnectionDirection(props.data?.id);
+                } else {
+                    props.selectConnection(props.data?.id);
+                }
             }}
         >
             <div className="connection-title-top"></div>
