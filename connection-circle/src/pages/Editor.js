@@ -64,7 +64,7 @@ function Editor(props) {
                 );
             }
         }
-        unavailableCircles.push(clickedCircle);
+        unavailableCirclesTemp.push(clickedCircle);
         setUnavailableCircles(unavailableCirclesTemp);
     }
 
