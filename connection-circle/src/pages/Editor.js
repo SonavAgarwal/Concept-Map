@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Circle from "../components/circle/Circle";
 import Connection from "../components/circle/Connection";
-import testingdata from "../testingdata";
 import uniqid from "uniqid";
 import ConnectionTitle from "../components/circle/ConnectionTitle";
 import isUrl from "is-url";
@@ -10,16 +9,18 @@ import { Item, Menu, Separator, useContextMenu } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
 import { CirclePicker } from "react-color";
 import { useDocumentData } from "react-firebase-hooks/firestore";
-
-import { getConfig } from "@testing-library/dom";
 import { doc, updateDoc } from "@firebase/firestore";
 import { auth, firestore } from "../firebase";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import Navbar from "../components/Navbar";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useBeforeunload } from "react-beforeunload";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { createPortal } from "react-dom";
+import { set } from "react-hook-form";
+const fileDownload = require("js-file-download");
+
+//------------------------------------------
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -61,24 +62,85 @@ function useForceUpdate() {
     return () => setValue((value) => value + 1); // update the state to force render
 }
 
+//------------------------------------------
+
 function Editor(props) {
     const forceUpdate = useForceUpdate();
 
+    const params = useParams();
+    const navigate = useNavigate();
     const renderDraggable = useDraggableInPortal();
 
-    useBeforeunload((event) => {
-        if (!saved) return "unsaved changes";
-    });
-
-    const params = useParams();
+    const [allowEditing, setAllowEditing] = useState(false);
     const [user, userLoading] = useAuthState(auth);
-    const [data, loading, error] = useDocumentData(doc(firestore, `users/${params.uid}/maps/${params.mapID}`));
+    const [docData, loading, error] = useDocumentData(doc(firestore, `users/${params.uid}/maps/${params.mapID}`));
+    const newCardInput = useRef();
+
+    const [data, setData] = useState({});
+
+    const [circleData, setCircleData] = useState([]);
+    const [circleDataMap, setCircleDataMap] = useState({});
+    const [connectionData, setConnectionData] = useState([]);
+    const [connectionDataMap, setConnectionDataMap] = useState({});
+
+    const [selectedConnection, setSelectedConnection] = useState("");
+
+    const [clickedConnection, setClickedConnection] = useState("");
+    const [clickedCircle, setClickedCircle] = useState("");
+    const [isDrawingConnection, setIsDrawingConnection] = useState(false);
+    const [unavailableCircles, setUnavailableCircles] = useState([]);
+
+    const [connectionTextInput, setConnectionTextInput] = useState("");
+
+    const [currentScale, setCurrentScale] = useState(1);
 
     const [saved, setSaved] = useState(true);
 
-    const { show } = useContextMenu({
+    useEffect(
+        function () {
+            if (data?.owner != user?.uid || props.viewer) {
+                setAllowEditing(false);
+            } else {
+                setAllowEditing(true);
+            }
+        },
+        [props.viewer, data]
+    );
+
+    useBeforeunload((event) => {
+        if (!saved && allowEditing) return "unsaved changes";
+    });
+
+    useEffect(
+        function () {
+            document.getElementById(selectedConnection + "-title")?.firstChild?.scrollIntoView();
+        },
+        [selectConnection]
+    );
+
+    useEffect(
+        function () {
+            let connectionObject = connectionDataMap[selectedConnection];
+            if (connectionObject) {
+                connectionObject.text = connectionTextInput;
+                setSaved(false);
+            }
+            forceUpdate();
+        },
+        [connectionTextInput]
+    );
+
+    useEffect(
+        function () {
+            setConnectionTextInput(connectionDataMap[selectedConnection]?.text);
+        },
+        [selectedConnection]
+    );
+
+    const { show: showConMenu } = useContextMenu({
         id: "circle-menu-id",
     });
+
     function handleContextMenu(event, itemType, itemID) {
         event.preventDefault();
         if (itemType == "circle") {
@@ -86,7 +148,7 @@ function Editor(props) {
         } else if (itemType == "connection") {
             setClickedConnection(itemID);
         }
-        show(event);
+        showConMenu(event);
     }
 
     function onDragEnd(result) {
@@ -147,35 +209,19 @@ function Editor(props) {
         setIsDrawingConnection(false);
     }
 
-    const newCardInput = useRef();
-
-    const [circleData, setCircleData] = useState([]);
-    const [circleDataMap, setCircleDataMap] = useState({});
-    const [connectionData, setConnectionData] = useState([]);
-    const [connectionDataMap, setConnectionDataMap] = useState({});
-
-    const [selectedConnection, setSelectedConnection] = useState("");
-
-    const [clickedConnection, setClickedConnection] = useState("");
-    const [clickedCircle, setClickedCircle] = useState("");
-    const [isDrawingConnection, setIsDrawingConnection] = useState(false);
-    const [unavailableCircles, setUnavailableCircles] = useState([]);
-
-    const [connectionTextInput, setConnectionTextInput] = useState("");
-
-    const [currentScale, setCurrentScale] = useState(1);
-
     useEffect(
         function () {
-            if (loading) return;
-            if (error) return;
-            processInitialData(data);
-            // if (props.data) {
-            //     processInitialData(props.data);
-            // } else {
-            // }
+            if (props.data) {
+                processInitialData(props.data);
+                setData(props.data);
+            } else {
+                if (loading) return;
+                if (error) return;
+                processInitialData(docData);
+                setData(docData);
+            }
         },
-        [data]
+        [props.data, docData]
     );
 
     function processInitialData(dataToUse) {
@@ -241,32 +287,6 @@ function Editor(props) {
         setSelectedConnection(connectionID);
     }
 
-    useEffect(
-        function () {
-            document.getElementById(selectedConnection + "-title")?.firstChild?.scrollIntoView();
-        },
-        [selectConnection]
-    );
-
-    useEffect(
-        function () {
-            let connectionObject = connectionDataMap[selectedConnection];
-            if (connectionObject) {
-                connectionObject.text = connectionTextInput;
-                setSaved(false);
-            }
-            forceUpdate();
-        },
-        [connectionTextInput]
-    );
-
-    useEffect(
-        function () {
-            setConnectionTextInput(connectionDataMap[selectedConnection]?.text);
-        },
-        [selectedConnection]
-    );
-
     function deleteClickedCircle() {
         if (!clickedCircle) return;
         let circle = circleDataMap[clickedCircle];
@@ -306,31 +326,63 @@ function Editor(props) {
         let newData = {
             circles: circleData,
             connections: connectionData,
+            lastEditTimestamp: new Date(),
         };
         updateDoc(doc(firestore, `users/${user.uid}/maps/${params.mapID}`), newData).then(function (result) {
             setSaved(true);
         });
     }
-    if (error && !props.data) {
+
+    function changePrivacy() {
+        let newData = {
+            public: !data?.public,
+            lastEditTimestamp: new Date(),
+        };
+        updateDoc(doc(firestore, `users/${user.uid}/maps/${params.mapID}`), newData).then(function (result) {
+            setSaved(true);
+        });
+    }
+
+    function downloadJSON() {
+        if (!data) return;
+        let toDowload = { ...data, circles: circleData, connections: connectionData };
+        toDowload = JSON.stringify(toDowload);
+        fileDownload(toDowload, `${data?.name ? data?.name : "Map"}.json`);
+    }
+
+    if (Object.keys(data).length === 0) {
         return (
             <div className='no-permission'>
-                <p>no permission sorry</p>
+                <p>Sorry, you don't have permission to view this.</p>
+                <button
+                    onClick={function () {
+                        navigate(-1);
+                    }}>
+                    Go back.
+                </button>
             </div>
         );
     }
 
     return (
         <>
-            {!props.data && (
-                <Navbar>
-                    <button
-                        onClick={saveMap}
-                        style={{
-                            opacity: saved ? "0.5 !important" : "1 !important",
-                        }}
-                        disabled={saved}>
-                        {saved ? "Saved" : "Save"}
-                    </button>
+            {!props.data && !props.hideNav && (
+                <Navbar title={data?.name}>
+                    {allowEditing && (
+                        <>
+                            <button
+                                onClick={saveMap}
+                                style={{
+                                    opacity: saved ? "0.5 !important" : "1 !important",
+                                }}
+                                disabled={saved}>
+                                {saved ? "Saved" : "Save"}
+                            </button>
+
+                            <button onClick={changePrivacy}>{data?.public ? "Public" : "Private"}</button>
+                        </>
+                    )}
+                    <button onClick={downloadJSON}>{"Download JSON"}</button>
                 </Navbar>
             )}
             <div className='editor' style={{ transform: `scale(${props.scale ? props.scale : 1})` }}>
@@ -387,6 +439,7 @@ function Editor(props) {
                                         selectConnection={selectConnection}
                                     />
                                 ))}
+                                {circleData?.length == 0 && <h1 className='instruction-text'>Get started by adding a circle.</h1>}
                             </div>
                         </TransformComponent>
                     </TransformWrapper>
@@ -412,7 +465,7 @@ function Editor(props) {
                                         {(provided, snapshot) => (
                                             <div {...provided.droppableProps} ref={provided.innerRef}>
                                                 {connectionData.map((connection, index) => (
-                                                    <Draggable key={connection.id} draggableId={connection.id} index={index}>
+                                                    <Draggable key={connection.id} draggableId={connection.id} index={index} isDragDisabled={!allowEditing}>
                                                         {renderDraggable((provided, snapshot) => (
                                                             <div
                                                                 ref={provided.innerRef}
@@ -445,6 +498,7 @@ function Editor(props) {
                         {selectedConnection && (
                             <div className='card light-shadow connection-text-card'>
                                 <textarea
+                                    disabled={!allowEditing}
                                     className='connection-text'
                                     placeholder='Type connection text here...'
                                     value={connectionTextInput}

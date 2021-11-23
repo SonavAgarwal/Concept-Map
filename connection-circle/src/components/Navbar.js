@@ -10,14 +10,14 @@ function Navbar(props) {
     const navigate = useNavigate();
     const [user, userLoading] = useAuthState(auth);
 
-    useEffect(
-        function () {
-            if (!userLoading && !user) {
-                navigate("/auth");
-            }
-        },
-        [user, userLoading]
-    );
+    // useEffect(
+    //     function () {
+    //         if (!userLoading && !user) {
+    //             navigate("/auth");
+    //         }
+    //     },
+    //     [user, userLoading]
+    // );
 
     return (
         <div className='navbar light-shadow'>
@@ -25,14 +25,19 @@ function Navbar(props) {
                 <Link to='/home'>
                     <img src={CircleLogo}></img>
                 </Link>
+                <h1>{props.title}</h1>
             </div>
             <div className='navbar-middle-section'></div>
             <div className='navbar-button-section'>
                 {props.children}
                 <button
                     onClick={function () {
-                        signOut(auth);
-                        navigate(0);
+                        if (user) {
+                            signOut(auth);
+                            navigate(0);
+                        } else {
+                            navigate("/auth");
+                        }
                     }}>
                     {user ? "Sign Out" : "Sign In"}
                 </button>

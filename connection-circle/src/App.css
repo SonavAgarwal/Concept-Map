@@ -44,9 +44,12 @@
 .navbar-logo-section {
     box-sizing: border-box;
     padding: 0.5rem;
+    display: flex;
+    align-items: center;
 }
 .navbar-logo-section img {
-    height: 100%;
+    height: 3rem;
+    margin-right: var(--margin);
 }
 .navbar-middle-section {
     flex: 1;
@@ -111,11 +114,12 @@
     opacity: 0;
     transition: opacity 0.3s ease;
     position: absolute;
-    padding: var(--margin);
     background-color: var(--background-color);
-    border-radius: var(--margin);
     text-decoration: none;
     color: var(--gray);
+    border-radius: calc(var(--margin) / 2);
+    padding: calc(var(--margin) / 2);
+    font-size: 0.75rem;
 }
 
 .circle:hover .circle-open-button {
@@ -175,12 +179,19 @@
 .editor-sidebar {
     position: absolute;
     right: 0;
-    width: 40rem;
+    width: 30rem;
     height: calc(100vh - var(--navbar-height));
+    overflow: scroll;
     background-color: transparent;
     pointer-events: none;
     /* z-index: 100; */
     /* flex: 1; */
+    padding-bottom: var(--margin);
+    box-sizing: border-box;
+}
+
+.editor-sidebar::-webkit-scrollbar {
+    display: none;
 }
 
 .card {
@@ -202,7 +213,7 @@
 }
 
 .connections-card {
-    max-height: 23rem;
+    max-height: 17rem;
     overflow: scroll;
 }
 
@@ -277,6 +288,7 @@ button {
     font-weight: bold;
     opacity: 1;
     transition: all 0.3s ease;
+    user-select: none;
 }
 
 .primary-button {
@@ -300,6 +312,12 @@ button:active {
 .map-card {
     display: flex;
     flex-direction: row;
+    overflow: hidden;
+    position: relative;
+}
+
+.map-card button {
+    margin-left: var(--margin);
 }
 
 .home-cards {
@@ -330,4 +348,33 @@ button:active {
     opacity: 1;
     transition: all 0.3s ease;
     text-decoration: none;
+}
+
+.map-viewer-wrapper {
+    flex: 1;
+    overflow: hidden;
+    max-height: 10rem;
+}
+
+h1 {
+    color: var(--gray);
+    font-size: 2rem !important;
+}
+
+.instruction-text {
+    padding: 10rem;
+}
+
+.no-permission {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+}
+
+.no-permission p {
+    font-size: 2rem;
+    color: var(--gray);
+    margin-right: 2rem;
 }

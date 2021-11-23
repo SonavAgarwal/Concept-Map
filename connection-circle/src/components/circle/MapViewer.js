@@ -46,14 +46,15 @@ function MapViewer(props) {
             style={{
                 transform: `scale(${props.scale ? props.scale : 1})`,
                 pointerEvents: "none",
-            }}
-        >
+                position: "absolute",
+            }}>
             {circleData.map((circle, index) => (
                 <Circle key={index.toString()} data={circle} />
             ))}
             {connectionData.map((connection) => (
                 <Connection data={connection} circleData={circleDataMap} />
             ))}
+            <div style={{ width: "100vw", height: "100vh", position: "absolute", zIndex: 200, pointerEvents: "all" }}></div>
         </div>
     );
 }

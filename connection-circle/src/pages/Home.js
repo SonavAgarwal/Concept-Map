@@ -1,5 +1,5 @@
 import { addDoc, collection, doc } from "@firebase/firestore";
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { useForm } from "react-hook-form";
@@ -18,13 +18,27 @@ function Home(props) {
     } = useForm();
 
     const navigate = useNavigate();
-    const [user, loading, error] = useAuthState(auth);
-
+    const [user, userLoading, error] = useAuthState(auth);
     const [mapData, dataLoading, dataError] = useCollectionData(collection(firestore, `users/${user?.uid}/maps`), { idField: "mapID" });
+
+    useEffect(
+        function () {
+            if (!userLoading && !user) {
+                navigate("/auth");
+            }
+        },
+        [user, userLoading]
+    );
 
     function onSubmit(data) {
         if (!user) return;
-        let mapData = {
+
+        if (mapData?.length >= 5) {
+            alert("You can create a maximum of five maps.");
+            return;
+        }
+
+        const newMapData = {
             name: data.name,
             description: data.description,
             owner: user.uid,
@@ -35,7 +49,7 @@ function Home(props) {
             connections: [],
         };
 
-        addDoc(collection(firestore, `/users/${user.uid}/maps`), mapData).then(function (result) {
+        addDoc(collection(firestore, `/users/${user.uid}/maps`), newMapData).then(function (result) {
             let docID = result.id;
             navigate(`/map/${user.uid}/${docID}`);
         });

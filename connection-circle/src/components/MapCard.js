@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Editor from "../pages/Editor";
 import MapViewer from "./circle/MapViewer";
 import sizeof from "firestore-size";
+import { deleteDoc, doc } from "@firebase/firestore";
+import { firestore } from "../firebase";
 
 function MapCard(props) {
     console.log("Size of " + props.data?.name + ": " + sizeof(props.data));
@@ -24,17 +26,16 @@ function MapCard(props) {
                 <Link className='primary-button link-button light-shadow' to={`/map/${props.uid}/${props.data?.mapID}`}>
                     Open
                 </Link>
+                <button
+                    onClick={function () {
+                        if (window.confirm("Are you sure you want to delete this map?")) {
+                            deleteDoc(doc(firestore, `users/${props.data?.owner}/maps/${props.data.mapID}`));
+                        }
+                    }}>
+                    Delete
+                </button>
             </div>
-            <div
-                style={{
-                    flex: 1,
-                    overflow: "hidden",
-                    maxHeight: "10rem",
-                    // display: "flex",
-                    // justifyContent: "center",
-                    // alignItems: "center",
-                }}
-                ref={viewerDiv}>
+            <div className='map-viewer-wrapper' ref={viewerDiv}>
                 <MapViewer scale={viewerScale} data={props.data}></MapViewer>
             </div>
         </div>
