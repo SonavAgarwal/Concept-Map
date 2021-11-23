@@ -2,24 +2,47 @@ import logo from "./logo.svg";
 import "./App.css";
 import "./reset.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useNavigate } from "react-router";
+
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Editor from "./pages/Editor";
 import Navbar from "./components/Navbar";
 
-function App() {
+import app from "firebase/app";
+import { useEffect } from "react";
+import { auth } from "./firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+
+function AppWrapper() {
+    return <App></App>;
+}
+
+function App(props) {
+    // const [user, loading, error] = useAuthState(auth);
+    // const navigate = useNavigate();
+    // useEffect(
+    //     function () {
+    //         if (user) {
+    //             // useNavigate("/home")
+    //         } else {
+    //             navigate("/auth");
+    //         }
+    //     },
+    //     [user]
+    // );
     return (
         <BrowserRouter>
-            <Navbar />
             <Routes>
                 <Route path="/">
                     <Route index element={<Home />} />
+                    <Route path="home" element={<Home />} />
                     <Route path="auth" element={<Auth />} />
-                    <Route path="circle/:circleID" element={<Editor />} />
+                    <Route path="map/:uid/:mapID" element={<Editor />} />
                 </Route>
             </Routes>
         </BrowserRouter>
     );
 }
 
-export default App;
+export default AppWrapper;

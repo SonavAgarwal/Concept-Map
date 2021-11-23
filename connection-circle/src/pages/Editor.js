@@ -9,7 +9,14 @@ import isUrl from "is-url";
 import { Item, Menu, Separator, useContextMenu } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
 import { CirclePicker } from "react-color";
+import { useDocumentData } from "react-firebase-hooks/firestore";
+
 import { getConfig } from "@testing-library/dom";
+import { doc, updateDoc } from "@firebase/firestore";
+import { auth, firestore } from "../firebase";
+import { useParams } from "react-router";
+import Navbar from "../components/Navbar";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 function useForceUpdate() {
     const [value, setValue] = useState(0); // integer state
@@ -19,6 +26,18 @@ function useForceUpdate() {
 function Editor(props) {
     const forceUpdate = useForceUpdate();
 
+    const params = useParams();
+    const [user, userLoading] = useAuthState(auth);
+    const [data, loading, error] = useDocumentData(
+        doc(firestore, `users/${params.uid}/maps/${params.mapID}`)
+    );
+
+    console.log(error);
+
+    const [saved, setSaved] = useState(true);
+
+    console.log(data);
+
     const { show } = useContextMenu({
         id: "circle-menu-id",
     });
@@ -27,6 +46,7 @@ function Editor(props) {
         if (itemType == "circle") {
             setClickedCircle(itemID);
         } else if (itemType == "connection") {
+            setClickedConnection(itemID);
         }
         show(event);
     }
@@ -72,6 +92,7 @@ function Editor(props) {
         exitConnectCircle();
 
         forceUpdate();
+        setSaved(false);
     }
 
     function exitConnectCircle() {
@@ -82,8 +103,6 @@ function Editor(props) {
 
     const newCardInput = useRef();
 
-    const data = testingdata;
-
     const [circleData, setCircleData] = useState([]);
     const [circleDataMap, setCircleDataMap] = useState({});
     const [connectionData, setConnectionData] = useState([]);
@@ -91,43 +110,58 @@ function Editor(props) {
 
     const [selectedConnection, setSelectedConnection] = useState("");
 
+    const [clickedConnection, setClickedConnection] = useState("");
     const [clickedCircle, setClickedCircle] = useState("");
     const [isDrawingConnection, setIsDrawingConnection] = useState(false);
     const [unavailableCircles, setUnavailableCircles] = useState([]);
 
     const [connectionTextInput, setConnectionTextInput] = useState("");
 
+    const [currentScale, setCurrentScale] = useState(1);
+
     useEffect(
         function () {
-            let circleDataTemp = [];
-            let circleDataMapTemp = {};
-            for (let circle of data.circles) {
-                let workingCopy = { ...circle };
-                circleDataTemp.push(workingCopy);
-                circleDataMapTemp[circle.id] = workingCopy;
-            }
-
-            setCircleData(circleDataTemp);
-            setCircleDataMap(circleDataMapTemp);
-
-            let connectionDataTemp = [];
-            let connectionDataMapTemp = {};
-            for (let connection of data.connections) {
-                let workingCopy = { ...connection };
-                connectionDataTemp.push(workingCopy);
-                connectionDataMapTemp[connection.id] = workingCopy;
-            }
-
-            setConnectionData(connectionDataTemp);
-            setConnectionDataMap(connectionDataMapTemp);
+            if (loading) return;
+            if (error) return;
+            processInitialData(data);
+            // if (props.data) {
+            //     processInitialData(props.data);
+            // } else {
+            // }
         },
-        [testingdata]
+        [data]
     );
+
+    function processInitialData(dataToUse) {
+        let circleDataTemp = [];
+        let circleDataMapTemp = {};
+        for (let circle of dataToUse.circles) {
+            let workingCopy = { ...circle };
+            circleDataTemp.push(workingCopy);
+            circleDataMapTemp[circle.id] = workingCopy;
+        }
+
+        setCircleData(circleDataTemp);
+        setCircleDataMap(circleDataMapTemp);
+
+        let connectionDataTemp = [];
+        let connectionDataMapTemp = {};
+        for (let connection of dataToUse.connections) {
+            let workingCopy = { ...connection };
+            connectionDataTemp.push(workingCopy);
+            connectionDataMapTemp[connection.id] = workingCopy;
+        }
+
+        setConnectionData(connectionDataTemp);
+        setConnectionDataMap(connectionDataMapTemp);
+    }
 
     function updateCircle(circleID, newData) {
         let targetObject = circleDataMap[circleID];
         Object.assign(targetObject, newData);
         forceUpdate();
+
+        setSaved(false);
     }
 
     function addCircle(type, content) {
@@ -137,14 +171,15 @@ function Editor(props) {
             type: type,
             content: content,
             color: "#FFFFFF",
-            x: 10,
-            y: 10,
+            x: 50,
+            y: 50,
         };
 
         setCircleData([...circleData, newCircleData]);
         circleDataMap[id] = newCircleData;
 
         forceUpdate();
+        setSaved(false);
     }
 
     function selectConnection(connectionID) {
@@ -163,7 +198,10 @@ function Editor(props) {
     useEffect(
         function () {
             let connectionObject = connectionDataMap[selectedConnection];
-            if (connectionObject) connectionObject.text = connectionTextInput;
+            if (connectionObject) {
+                connectionObject.text = connectionTextInput;
+                setSaved(false);
+            }
             forceUpdate();
         },
         [connectionTextInput]
@@ -176,76 +214,173 @@ function Editor(props) {
         [selectedConnection]
     );
 
-    return (
-        <div className="editor">
-            <div
-                className="editor-canvas-wrapper"
-                onClick={function (e) {
-                    // exitConnectCircle();
-                    try {
-                        if (
-                            clickedCircle &&
-                            !e?.target?.className?.includes("circle")
-                        ) {
-                            exitConnectCircle();
-                        }
-                    } catch {}
-                }}
-            >
-                <TransformWrapper
-                    panning={{ excluded: ["circle", "circle-text"] }}
-                    maxScale={3}
-                >
-                    <TransformComponent
-                        wrapperStyle={{ width: "100%" }}
-                        contentStyle={{ width: "100%" }}
-                    >
-                        <div class="editor-canvas">
-                            {circleData.map((circle, index) => (
-                                <Circle
-                                    key={index.toString()}
-                                    data={circle}
-                                    updateCircle={updateCircle}
-                                    showContextMenu={handleContextMenu}
-                                    handleClick={handleCircleClick}
-                                    disabled={unavailableCircles.includes(
-                                        circle.id
-                                    )}
-                                />
-                            ))}
-                            {connectionData.map((connection) => (
-                                <Connection
-                                    data={connection}
-                                    circleData={circleDataMap}
-                                    selected={
-                                        selectedConnection == connection.id
-                                    }
-                                    selectConnection={selectConnection}
-                                />
-                            ))}
-                        </div>
-                    </TransformComponent>
-                </TransformWrapper>
+    function deleteClickedCircle() {
+        if (!clickedCircle) return;
+        let circle = circleDataMap[clickedCircle];
+        let newCircles = circleData.filter((cir) => cir.id != clickedCircle);
+
+        let newConnections = connectionData.filter((con) => {
+            if (con?.circles?.includes(clickedCircle)) {
+                delete connectionDataMap[con.id];
+                return false;
+            }
+            return true;
+        });
+
+        delete circleDataMap[clickedCircle];
+
+        setCircleData(newCircles);
+        forceUpdate();
+
+        setClickedCircle("");
+        setConnectionData(newConnections);
+        forceUpdate();
+        setSaved(false);
+    }
+
+    function deleteClickedConnection() {
+        console.log("deleting");
+        if (!clickedConnection) return;
+
+        console.log("deleting connectino");
+
+        delete connectionDataMap[clickedConnection];
+        setConnectionData(
+            connectionData.filter((con) => con.id != clickedConnection)
+        );
+
+        setClickedConnection("");
+        forceUpdate();
+        setSaved(false);
+    }
+
+    function saveMap() {
+        let newData = {
+            circles: circleData,
+            connections: connectionData,
+        };
+        updateDoc(
+            doc(firestore, `users/${user.uid}/maps/${params.mapID}`),
+            newData
+        ).then(function (result) {
+            setSaved(true);
+        });
+    }
+    if (error && !props.data) {
+        return (
+            <div className="no-permission">
+                <p>no permission sorry</p>
             </div>
-            <div className="editor-sidebar">
-                <div className="card light-shadow add-circle-card">
-                    <form
-                        onSubmit={function (e) {
-                            e.preventDefault();
-                            let type = "text";
-                            if (isUrl(newCardInput.current.value))
-                                type = "image";
-                            addCircle(type, newCardInput.current.value);
-                            newCardInput.current.value = "";
+        );
+    }
+
+    return (
+        <>
+            {!props.data && (
+                <Navbar>
+                    <button
+                        onClick={saveMap}
+                        style={{
+                            opacity: saved ? "0.5 !important" : "1 !important",
                         }}
+                        disabled={saved}
                     >
-                        <input
-                            ref={newCardInput}
-                            className="input"
-                            placeholder={"Add a card..."}
-                        ></input>
-                    </form>
-                    {/* <button
+                        {saved ? "Saved" : "Save"}
+                    </button>
+                </Navbar>
+            )}
+            <div
+                className="editor"
+                style={{ transform: `scale(${props.scale ? props.scale : 1})` }}
+            >
+                <div
+                    className="editor-canvas-wrapper"
+                    onClick={function (e) {
+                        // exitConnectCircle();
+                        try {
+                            if (
+                                clickedCircle &&
+                                !e?.target?.className?.includes("circle")
+                            ) {
+                                exitConnectCircle();
+                            }
+                        } catch {}
+                        // try {
+                        //     if (
+                        //         clickedConnection &&
+                        //         !e?.target?.className?.includes("connection")
+                        //     ) {
+                        //         exitConnectCircle();
+                        //     }
+                        // } catch {}
+                    }}
+                >
+                    <TransformWrapper
+                        panning={{ excluded: ["circle", "circle-text"] }}
+                        minScale={1}
+                        initialScale={1}
+                        maxScale={1}
+                        initialPositionX={0}
+                        initialPositionY={0}
+                        onZoom={function (transform) {
+                            console.log(transform.state.scale);
+                            setCurrentScale(transform.state.scale);
+                        }}
+                        // limitToBounds={false}
+                    >
+                        <TransformComponent
+                            wrapperStyle={{ width: "100%" }}
+                            contentStyle={{ width: "100%" }}
+                        >
+                            <div class="editor-canvas">
+                                {circleData.map((circle, index) => (
+                                    <Circle
+                                        key={index.toString()}
+                                        data={circle}
+                                        updateCircle={updateCircle}
+                                        showContextMenu={handleContextMenu}
+                                        handleClick={handleCircleClick}
+                                        disabled={unavailableCircles.includes(
+                                            circle.id
+                                        )}
+                                        currentScale={currentScale}
+                                    />
+                                ))}
+                                {connectionData.map((connection) => (
+                                    <Connection
+                                        data={connection}
+                                        circleData={circleDataMap}
+                                        selected={
+                                            selectedConnection == connection.id
+                                        }
+                                        showContextMenu={handleContextMenu}
+                                        selectConnection={selectConnection}
+                                    />
+                                ))}
+                            </div>
+                        </TransformComponent>
+                    </TransformWrapper>
+                </div>
+                {!props.data && (
+                    <div className="editor-sidebar">
+                        <div className="card light-shadow add-circle-card">
+                            <form
+                                onSubmit={function (e) {
+                                    e.preventDefault();
+                                    let type = "text";
+                                    if (isUrl(newCardInput.current.value))
+                                        type = "image";
+                                    addCircle(type, newCardInput.current.value);
+                                    newCardInput.current.value = "";
+                                }}
+                            >
+                                <input
+                                    ref={newCardInput}
+                                    className="input"
+                                    placeholder={"Add a card..."}
+                                ></input>
+                            </form>
+                            {/* <button
                         onClick={function () {
                             forceUpdate();
                         }}
@@ -262,85 +397,77 @@ function Editor(props) {
                     >
                         print
                     </button> */}
-                </div>
-                {connectionData.length > 0 && (
-                    <div className="card light-shadow connections-card">
-                        {connectionData.map((connection) => (
-                            <ConnectionTitle
-                                data={connection}
-                                circleData={circleDataMap}
-                                selected={selectedConnection == connection.id}
-                                selectConnection={selectConnection}
-                            />
-                        ))}
+                        </div>
+                        {connectionData.length > 0 && (
+                            <div className="card light-shadow connections-card">
+                                {connectionData.map((connection) => (
+                                    <ConnectionTitle
+                                        data={connection}
+                                        circleData={circleDataMap}
+                                        selected={
+                                            selectedConnection == connection.id
+                                        }
+                                        selectConnection={selectConnection}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                        {selectedConnection && (
+                            <div className="card light-shadow connection-text-card">
+                                <textarea
+                                    className="connection-text"
+                                    placeholder="Type connection text here..."
+                                    value={connectionTextInput}
+                                    onChange={function (e) {
+                                        setConnectionTextInput(e.target.value);
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
                 )}
-                {selectedConnection && (
-                    <div className="card light-shadow connection-text-card">
-                        <textarea
-                            className="connection-text"
-                            placeholder="Type connection text here..."
-                            value={connectionTextInput}
-                            onChange={function (e) {
-                                setConnectionTextInput(e.target.value);
-                            }}
-                        />
-                    </div>
-                )}
-            </div>
-            <Menu animation={"scale"} id={"circle-menu-id"}>
-                <Item
-                    onClick={function () {
-                        startConnectCircle();
-                    }}
-                >
-                    Connect
-                </Item>
-                <Separator />
-                <div className="color-picker-wrapper">
-                    <CirclePicker
-                        onChangeComplete={function (color) {
-                            let circle = circleDataMap[clickedCircle];
-                            if (!circle) return;
-                            updateCircle(circle.id, { color: color.hex });
-                            setClickedCircle("");
-                            forceUpdate();
-                        }}
-                    ></CirclePicker>
-                </div>
-                <Separator />
-                <Item
-                    onClick={function () {
-                        let circle = circleDataMap[clickedCircle];
-                        let newCircles = circleData.filter(
-                            (cir) => cir.id != clickedCircle
-                        );
-
-                        let newConnections = connectionData.filter((con) => {
-                            if (con?.circles?.includes(clickedCircle)) {
-                                delete connectionDataMap[con.id];
-                                return false;
+                <Menu animation={"scale"} id={"circle-menu-id"}>
+                    {clickedCircle && (
+                        <>
+                            <Item
+                                onClick={function () {
+                                    startConnectCircle();
+                                }}
+                            >
+                                Connect
+                            </Item>
+                            <Separator />
+                            <div className="color-picker-wrapper">
+                                <CirclePicker
+                                    onChangeComplete={function (color) {
+                                        let circle =
+                                            circleDataMap[clickedCircle];
+                                        if (!circle) return;
+                                        updateCircle(circle.id, {
+                                            color: color.hex,
+                                        });
+                                        setClickedCircle("");
+                                        forceUpdate();
+                                    }}
+                                ></CirclePicker>
+                            </div>
+                            <Separator />
+                        </>
+                    )}
+                    <Item
+                        onClick={function () {
+                            if (clickedCircle) {
+                                deleteClickedCircle();
+                            } else if (clickedConnection) {
+                                deleteClickedConnection();
                             }
-                            return true;
-                        });
-
-                        delete circleDataMap[clickedCircle];
-
-                        setCircleData(newCircles);
-                        forceUpdate();
-
-                        setClickedCircle("");
-                        setConnectionData(newConnections);
-                        forceUpdate();
-
-                        // setTimeout(() => {
-                        // }, 100);
-                    }}
-                >
-                    Delete
-                </Item>
-            </Menu>
-        </div>
+                        }}
+                    >
+                        Delete
+                    </Item>
+                </Menu>
+            </div>
+        </>
     );
 }
 

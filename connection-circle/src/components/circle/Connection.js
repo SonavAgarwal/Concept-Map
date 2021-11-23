@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { circleSize } from "../../config";
 
 function Connection(props) {
     // const [x1, setX1] = useState(0);
@@ -10,7 +11,10 @@ function Connection(props) {
     let x2 = props.circleData[props.data.circles[1]]?.x;
     let y1 = props.circleData[props.data.circles[0]]?.y;
     let y2 = props.circleData[props.data.circles[1]]?.y;
-    let halfCircle = convertRemToPixels(4);
+    let halfCircle = convertRemToPixels(circleSize * 4);
+    console.log("halfCircle");
+    console.log(convertRemToPixels(circleSize));
+    console.log(halfCircle);
     x1 += halfCircle;
     x2 += halfCircle;
     y1 += halfCircle;
@@ -45,6 +49,9 @@ function Connection(props) {
             className="connection-line-svg"
             onClick={function () {
                 props.selectConnection(props.data?.id);
+            }}
+            onContextMenu={function (e) {
+                props.showContextMenu(e, "connection", props.data?.id);
             }}
         >
             <line
