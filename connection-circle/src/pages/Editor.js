@@ -72,15 +72,9 @@ function Editor(props) {
 
     const params = useParams();
     const [user, userLoading] = useAuthState(auth);
-    const [data, loading, error] = useDocumentData(
-        doc(firestore, `users/${params.uid}/maps/${params.mapID}`)
-    );
-
-    console.log(error);
+    const [data, loading, error] = useDocumentData(doc(firestore, `users/${params.uid}/maps/${params.mapID}`));
 
     const [saved, setSaved] = useState(true);
-
-    console.log(data);
 
     const { show } = useContextMenu({
         id: "circle-menu-id",
@@ -101,11 +95,7 @@ function Editor(props) {
             return;
         }
 
-        const items = reorder(
-            connectionData,
-            result.source.index,
-            result.destination.index
-        );
+        const items = reorder(connectionData, result.source.index, result.destination.index);
 
         setConnectionData(items);
         forceUpdate();
@@ -114,15 +104,10 @@ function Editor(props) {
 
     function startConnectCircle() {
         setIsDrawingConnection(true);
-        console.log("starting connections");
         let unavailableCirclesTemp = [];
         for (let connection of connectionData) {
             if (connection.circles.includes(clickedCircle)) {
-                unavailableCirclesTemp.push(
-                    [...connection.circles].filter(
-                        (cirID) => cirID != clickedCircle
-                    )[0]
-                );
+                unavailableCirclesTemp.push([...connection.circles].filter((cirID) => cirID != clickedCircle)[0]);
             }
         }
         unavailableCirclesTemp.push(clickedCircle);
@@ -258,9 +243,7 @@ function Editor(props) {
 
     useEffect(
         function () {
-            document
-                .getElementById(selectedConnection + "-title")
-                ?.firstChild?.scrollIntoView();
+            document.getElementById(selectedConnection + "-title")?.firstChild?.scrollIntoView();
         },
         [selectConnection]
     );
@@ -309,15 +292,10 @@ function Editor(props) {
     }
 
     function deleteClickedConnection() {
-        console.log("deleting");
         if (!clickedConnection) return;
 
-        console.log("deleting connectino");
-
         delete connectionDataMap[clickedConnection];
-        setConnectionData(
-            connectionData.filter((con) => con.id != clickedConnection)
-        );
+        setConnectionData(connectionData.filter((con) => con.id != clickedConnection));
 
         setClickedConnection("");
         forceUpdate();
@@ -329,16 +307,13 @@ function Editor(props) {
             circles: circleData,
             connections: connectionData,
         };
-        updateDoc(
-            doc(firestore, `users/${user.uid}/maps/${params.mapID}`),
-            newData
-        ).then(function (result) {
+        updateDoc(doc(firestore, `users/${user.uid}/maps/${params.mapID}`), newData).then(function (result) {
             setSaved(true);
         });
     }
     if (error && !props.data) {
         return (
-            <div className="no-permission">
+            <div className='no-permission'>
                 <p>no permission sorry</p>
             </div>
         );
@@ -353,25 +328,18 @@ function Editor(props) {
                         style={{
                             opacity: saved ? "0.5 !important" : "1 !important",
                         }}
-                        disabled={saved}
-                    >
+                        disabled={saved}>
                         {saved ? "Saved" : "Save"}
                     </button>
                 </Navbar>
             )}
-            <div
-                className="editor"
-                style={{ transform: `scale(${props.scale ? props.scale : 1})` }}
-            >
+            <div className='editor' style={{ transform: `scale(${props.scale ? props.scale : 1})` }}>
                 <div
-                    className="editor-canvas-wrapper"
+                    className='editor-canvas-wrapper'
                     onClick={function (e) {
                         // exitConnectCircle();
                         try {
-                            if (
-                                clickedCircle &&
-                                !e?.target?.className?.includes("circle")
-                            ) {
+                            if (clickedCircle && !e?.target?.className?.includes("circle")) {
                                 exitConnectCircle();
                             }
                         } catch {}
@@ -383,8 +351,7 @@ function Editor(props) {
                         //         exitConnectCircle();
                         //     }
                         // } catch {}
-                    }}
-                >
+                    }}>
                     <TransformWrapper
                         panning={{ excluded: ["circle", "circle-text"] }}
                         minScale={1}
@@ -398,11 +365,8 @@ function Editor(props) {
                         }}
                         // limitToBounds={false}
                     >
-                        <TransformComponent
-                            wrapperStyle={{ width: "100%" }}
-                            contentStyle={{ width: "100%" }}
-                        >
-                            <div class="editor-canvas">
+                        <TransformComponent wrapperStyle={{ width: "100%" }} contentStyle={{ width: "100%" }}>
+                            <div class='editor-canvas'>
                                 {circleData.map((circle, index) => (
                                     <Circle
                                         key={index.toString()}
@@ -410,9 +374,7 @@ function Editor(props) {
                                         updateCircle={updateCircle}
                                         showContextMenu={handleContextMenu}
                                         handleClick={handleCircleClick}
-                                        disabled={unavailableCircles.includes(
-                                            circle.id
-                                        )}
+                                        disabled={unavailableCircles.includes(circle.id)}
                                         currentScale={currentScale}
                                     />
                                 ))}
@@ -420,9 +382,7 @@ function Editor(props) {
                                     <Connection
                                         data={connection}
                                         circleData={circleDataMap}
-                                        selected={
-                                            selectedConnection == connection.id
-                                        }
+                                        selected={selectedConnection == connection.id}
                                         showContextMenu={handleContextMenu}
                                         selectConnection={selectConnection}
                                     />
@@ -432,102 +392,47 @@ function Editor(props) {
                     </TransformWrapper>
                 </div>
                 {!props.data && (
-                    <div className="editor-sidebar">
-                        <div className="card light-shadow add-circle-card">
+                    <div className='editor-sidebar'>
+                        <div className='card light-shadow add-circle-card'>
                             <form
                                 onSubmit={function (e) {
                                     e.preventDefault();
                                     let type = "text";
-                                    if (isUrl(newCardInput.current.value))
-                                        type = "image";
+                                    if (isUrl(newCardInput.current.value)) type = "image";
                                     addCircle(type, newCardInput.current.value);
                                     newCardInput.current.value = "";
-                                }}
-                            >
-                                <input
-                                    ref={newCardInput}
-                                    className="input"
-                                    placeholder={"Add a card..."}
-                                ></input>
+                                }}>
+                                <input ref={newCardInput} className='input' placeholder={"Add a card..."}></input>
                             </form>
-                            {/* <button
-                        onClick={function () {
-                            forceUpdate();
-                        }}
-                    >
-                        force update
-                    </button>
-                    <button
-                        onClick={function () {
-                            console.log(circleData);
-                            console.log(circleDataMap);
-                            console.log(connectionData);
-                            console.log(connectionDataMap);
-                        }}
-                    >
-                        print
-                    </button> */}
                         </div>
                         {connectionData.length > 0 && (
-                            <div className="card light-shadow connections-card">
+                            <div className='card light-shadow connections-card'>
                                 <DragDropContext onDragEnd={onDragEnd}>
-                                    <Droppable droppableId="droppable">
+                                    <Droppable droppableId='droppable'>
                                         {(provided, snapshot) => (
-                                            <div
-                                                {...provided.droppableProps}
-                                                ref={provided.innerRef}
-                                            >
-                                                {connectionData.map(
-                                                    (connection, index) => (
-                                                        <Draggable
-                                                            key={connection.id}
-                                                            draggableId={
-                                                                connection.id
-                                                            }
-                                                            index={index}
-                                                        >
-                                                            {renderDraggable(
-                                                                (
-                                                                    provided,
-                                                                    snapshot
-                                                                ) => (
-                                                                    <div
-                                                                        ref={
-                                                                            provided.innerRef
-                                                                        }
-                                                                        {...provided.draggableProps}
-                                                                        {...provided.dragHandleProps}
-                                                                        className="connection-title-wrapper"
-                                                                        style={{
-                                                                            ...provided
-                                                                                .draggableProps
-                                                                                .style,
-                                                                        }}
-                                                                    >
-                                                                        <ConnectionTitle
-                                                                            data={
-                                                                                connection
-                                                                            }
-                                                                            circleData={
-                                                                                circleDataMap
-                                                                            }
-                                                                            selected={
-                                                                                selectedConnection ==
-                                                                                connection.id
-                                                                            }
-                                                                            selectConnection={
-                                                                                selectConnection
-                                                                            }
-                                                                            switchConnectionDirection={
-                                                                                switchConnectionDirection
-                                                                            }
-                                                                        />
-                                                                    </div>
-                                                                )
-                                                            )}
-                                                        </Draggable>
-                                                    )
-                                                )}
+                                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                                {connectionData.map((connection, index) => (
+                                                    <Draggable key={connection.id} draggableId={connection.id} index={index}>
+                                                        {renderDraggable((provided, snapshot) => (
+                                                            <div
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                {...provided.dragHandleProps}
+                                                                className='connection-title-wrapper'
+                                                                style={{
+                                                                    ...provided.draggableProps.style,
+                                                                }}>
+                                                                <ConnectionTitle
+                                                                    data={connection}
+                                                                    circleData={circleDataMap}
+                                                                    selected={selectedConnection == connection.id}
+                                                                    selectConnection={selectConnection}
+                                                                    switchConnectionDirection={switchConnectionDirection}
+                                                                />
+                                                            </div>
+                                                        ))}
+                                                    </Draggable>
+                                                ))}
                                                 {provided.placeholder}
                                             </div>
                                         )}
@@ -538,10 +443,10 @@ function Editor(props) {
                             </div>
                         )}
                         {selectedConnection && (
-                            <div className="card light-shadow connection-text-card">
+                            <div className='card light-shadow connection-text-card'>
                                 <textarea
-                                    className="connection-text"
-                                    placeholder="Type connection text here..."
+                                    className='connection-text'
+                                    placeholder='Type connection text here...'
                                     value={connectionTextInput}
                                     onChange={function (e) {
                                         setConnectionTextInput(e.target.value);
@@ -557,24 +462,21 @@ function Editor(props) {
                             <Item
                                 onClick={function () {
                                     startConnectCircle();
-                                }}
-                            >
+                                }}>
                                 Connect
                             </Item>
                             <Separator />
-                            <div className="color-picker-wrapper">
+                            <div className='color-picker-wrapper'>
                                 <CirclePicker
                                     onChangeComplete={function (color) {
-                                        let circle =
-                                            circleDataMap[clickedCircle];
+                                        let circle = circleDataMap[clickedCircle];
                                         if (!circle) return;
                                         updateCircle(circle.id, {
                                             color: color.hex,
                                         });
                                         setClickedCircle("");
                                         forceUpdate();
-                                    }}
-                                ></CirclePicker>
+                                    }}></CirclePicker>
                             </div>
                             <Separator />
                         </>
@@ -586,8 +488,7 @@ function Editor(props) {
                             } else if (clickedConnection) {
                                 deleteClickedConnection();
                             }
-                        }}
-                    >
+                        }}>
                         Delete
                     </Item>
                 </Menu>

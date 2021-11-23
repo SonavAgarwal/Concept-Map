@@ -2,35 +2,26 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Editor from "../pages/Editor";
 import MapViewer from "./circle/MapViewer";
+import sizeof from "firestore-size";
 
 function MapCard(props) {
+    console.log("Size of " + props.data?.name + ": " + sizeof(props.data));
+
     const { innerWidth: width, innerHeight: height } = window;
     const [viewerScale, setViewerScale] = useState(1);
     const viewerDiv = useRef();
     useEffect(
         function () {
-            console.log(viewerDiv.current.offsetWidth);
-
-            setViewerScale(
-                Math.max(
-                    viewerDiv.current.offsetWidth / width,
-                    viewerDiv.current.offsetHeight / height
-                )
-            );
+            setViewerScale(Math.max(viewerDiv.current.offsetWidth / width, viewerDiv.current.offsetHeight / height));
         },
         [viewerDiv]
     );
     return (
-        <div className="card map-card light-shadow">
+        <div className='card map-card light-shadow'>
             <div style={{ flex: 1 }}>
-                <h1 className="map-card-name">{props.data?.name}</h1>
-                <p className="map-card-description">
-                    {props.data?.description}
-                </p>
-                <Link
-                    className="primary-button link-button light-shadow"
-                    to={`/map/${props.uid}/${props.data?.mapID}`}
-                >
+                <h1 className='map-card-name'>{props.data?.name}</h1>
+                <p className='map-card-description'>{props.data?.description}</p>
+                <Link className='primary-button link-button light-shadow' to={`/map/${props.uid}/${props.data?.mapID}`}>
                     Open
                 </Link>
             </div>
@@ -43,8 +34,7 @@ function MapCard(props) {
                     // justifyContent: "center",
                     // alignItems: "center",
                 }}
-                ref={viewerDiv}
-            >
+                ref={viewerDiv}>
                 <MapViewer scale={viewerScale} data={props.data}></MapViewer>
             </div>
         </div>
@@ -60,9 +50,7 @@ function getWindowDimensions() {
 }
 
 function useWindowDimensions() {
-    const [windowDimensions, setWindowDimensions] = useState(
-        getWindowDimensions()
-    );
+    const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
 
     useEffect(() => {
         function handleResize() {
