@@ -20,17 +20,17 @@ function Navbar(props) {
     // );
 
     return (
-        <div className='navbar light-shadow'>
-            <div className='navbar-logo-section'>
-                <Link to='/home'>
+        <div className="navbar light-shadow">
+            <div className="navbar-logo-section">
+                <Link to="/home">
                     <img src={CircleLogo}></img>
                 </Link>
                 <h1>{props.title}</h1>
             </div>
-            <div className='navbar-middle-section'></div>
-            <div className='navbar-button-section'>
+            <div className="navbar-middle-section"></div>
+            <div className="navbar-button-section">
                 {props.children}
-                <img src={user?.photoURL} className='navbar-pfp' />
+                <img src={user?.photoURL} className="navbar-pfp" />
                 <button
                     onClick={function () {
                         if (user) {
@@ -39,7 +39,8 @@ function Navbar(props) {
                         } else {
                             navigate("/auth");
                         }
-                    }}>
+                    }}
+                >
                     {user ? "Sign Out" : "Sign In"}
                 </button>
             </div>

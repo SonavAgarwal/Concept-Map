@@ -86,7 +86,9 @@ function Editor(props) {
     const [allowEditing, setAllowEditing] = useState(false);
     const [user, userLoading] = useAuthState(auth);
 
-    const [docData, loading, error] = useDocumentData(doc(firestore, `users/${params.uid}/maps/${params.mapID}`));
+    const [docData, loading, error] = useDocumentData(
+        doc(firestore, `users/${params.uid}/maps/${params.mapID}`)
+    );
     const newCardInput = useRef();
 
     const [data, setData] = useState({});
@@ -112,16 +114,20 @@ function Editor(props) {
     const [showShareModal, setShowShareModal] = useState(false);
     const shareEmailInput = useRef();
 
-    useEffect(
-        function () {
-            if (!props.data && (!params.uid || !params.mapID)) navigate("/");
-        },
-        [props.viewer, props.data, params.uid, params.mapID]
-    );
+    // useEffect(
+    //     function () {
+    //         if (!props.data && (!params.uid || !params.mapID)) navigate("/");
+    //     },
+    //     [props.viewer, props.data, params.uid, params.mapID]
+    // );
 
     useEffect(
         function () {
-            if ((data?.owner != user?.uid && !data?.collaborators?.includes(user?.email)) || props.viewer) {
+            if (
+                (data?.owner != user?.uid &&
+                    !data?.collaborators?.includes(user?.email)) ||
+                props.viewer
+            ) {
                 setAllowEditing(false);
             } else {
                 setAllowEditing(true);
@@ -136,7 +142,9 @@ function Editor(props) {
 
     useEffect(
         function () {
-            document.getElementById(selectedConnection + "-title")?.firstChild?.scrollIntoView();
+            document
+                .getElementById(selectedConnection + "-title")
+                ?.firstChild?.scrollIntoView();
         },
         [selectConnection]
     );
@@ -180,7 +188,11 @@ function Editor(props) {
             return;
         }
 
-        const items = reorder(connectionData, result.source.index, result.destination.index);
+        const items = reorder(
+            connectionData,
+            result.source.index,
+            result.destination.index
+        );
 
         setConnectionData(items);
         forceUpdate();
@@ -192,7 +204,11 @@ function Editor(props) {
         let unavailableCirclesTemp = [];
         for (let connection of connectionData) {
             if (connection.circles.includes(clickedCircle)) {
-                unavailableCirclesTemp.push([...connection.circles].filter((cirID) => cirID != clickedCircle)[0]);
+                unavailableCirclesTemp.push(
+                    [...connection.circles].filter(
+                        (cirID) => cirID != clickedCircle
+                    )[0]
+                );
             }
         }
         unavailableCirclesTemp.push(clickedCircle);
@@ -338,7 +354,9 @@ function Editor(props) {
         if (!clickedConnection) return;
 
         delete connectionDataMap[clickedConnection];
-        setConnectionData(connectionData.filter((con) => con.id != clickedConnection));
+        setConnectionData(
+            connectionData.filter((con) => con.id != clickedConnection)
+        );
 
         setClickedConnection("");
         forceUpdate();
@@ -351,7 +369,10 @@ function Editor(props) {
             connections: connectionData,
             lastEditTimestamp: new Date(),
         };
-        updateDoc(doc(firestore, `users/${params.uid}/maps/${params.mapID}`), newData).then(function (result) {
+        updateDoc(
+            doc(firestore, `users/${params.uid}/maps/${params.mapID}`),
+            newData
+        ).then(function (result) {
             setSaved(true);
         });
     }
@@ -361,7 +382,10 @@ function Editor(props) {
             public: !data?.public,
             lastEditTimestamp: new Date(),
         };
-        updateDoc(doc(firestore, `users/${params.uid}/maps/${params.mapID}`), newData).then(function (result) {
+        updateDoc(
+            doc(firestore, `users/${params.uid}/maps/${params.mapID}`),
+            newData
+        ).then(function (result) {
             setSaved(true);
         });
     }
@@ -377,7 +401,9 @@ function Editor(props) {
         let potentialEmail = shareEmailInput.current.value?.toLowerCase();
         if (isEmail(potentialEmail)) {
             shareEmailInput.current.value = "";
-            let newCollaboratorArray = data.collaborators ? data.collaborators : [];
+            let newCollaboratorArray = data.collaborators
+                ? data.collaborators
+                : [];
             newCollaboratorArray.push(potentialEmail);
             let newData = { ...data, collaborators: newCollaboratorArray };
             setData(newData);
@@ -392,7 +418,9 @@ function Editor(props) {
 
     function removeCollaborator(collaboratorEmail) {
         let newCollaboratorArray = data.collaborators ? data.collaborators : [];
-        newCollaboratorArray = newCollaboratorArray.filter((email) => email !== collaboratorEmail);
+        newCollaboratorArray = newCollaboratorArray.filter(
+            (email) => email !== collaboratorEmail
+        );
         let newData = { ...data, collaborators: newCollaboratorArray };
         setData(newData);
         forceUpdate();
@@ -406,14 +434,21 @@ function Editor(props) {
             connections: connectionData,
             lastEditTimestamp: new Date(),
         };
-        updateDoc(doc(firestore, `users/${params.uid}/maps/${params.mapID}`), newData).then(function (result) {
+        updateDoc(
+            doc(firestore, `users/${params.uid}/maps/${params.mapID}`),
+            newData
+        ).then(function (result) {
             setSaved(true);
         });
     }
 
     function downloadJSON() {
         if (!data) return;
-        let toDowload = { ...data, circles: circleData, connections: connectionData };
+        let toDowload = {
+            ...data,
+            circles: circleData,
+            connections: connectionData,
+        };
         toDowload = JSON.stringify(toDowload);
         fileDownload(toDowload, `${data?.name ? data?.name : "Map"}.json`);
     }
@@ -426,11 +461,12 @@ function Editor(props) {
                         <Item
                             onClick={function () {
                                 startConnectCircle();
-                            }}>
+                            }}
+                        >
                             Connect
                         </Item>
                         <Separator />
-                        <div className='color-picker-wrapper'>
+                        <div className="color-picker-wrapper">
                             <CirclePicker
                                 colors={circleColors}
                                 onChangeComplete={function (color) {
@@ -441,7 +477,8 @@ function Editor(props) {
                                     });
                                     setClickedCircle("");
                                     forceUpdate();
-                                }}></CirclePicker>
+                                }}
+                            ></CirclePicker>
                             {/* <CircleButton></CircleButton> */}
                         </div>
                         <Separator />
@@ -454,7 +491,8 @@ function Editor(props) {
                         } else if (clickedConnection) {
                             deleteClickedConnection();
                         }
-                    }}>
+                    }}
+                >
                     Delete
                 </Item>
             </Menu>
@@ -463,21 +501,23 @@ function Editor(props) {
 
     if (Object.keys(data).length === 0) {
         return (
-            <div className='no-permission'>
+            <div className="no-permission">
                 <p>Sorry, you don't have permission to view this.</p>
                 {!user && (
                     <button
-                        className='primary-button'
+                        className="primary-button"
                         onClick={function () {
                             navigate("/auth");
-                        }}>
+                        }}
+                    >
                         Sign in.
                     </button>
                 )}
                 <button
                     onClick={function () {
                         navigate(-1);
-                    }}>
+                    }}
+                >
                     Go back.
                 </button>
             </div>
@@ -490,33 +530,51 @@ function Editor(props) {
                 <Navbar title={data?.name}>
                     {allowEditing && (
                         <>
-                            <p className='timestamp-string'>Last edited {timeAgo.format(data?.lastEditTimestamp.toDate(), "twitter-minute-now")}</p>
+                            <p className="timestamp-string">
+                                Last edited{" "}
+                                {timeAgo.format(
+                                    data?.lastEditTimestamp.toDate(),
+                                    "twitter-minute-now"
+                                )}
+                            </p>
                             <button
                                 onClick={saveMap}
                                 style={{
-                                    opacity: saved ? "0.5 !important" : "1 !important",
+                                    opacity: saved
+                                        ? "0.5 !important"
+                                        : "1 !important",
                                 }}
-                                disabled={saved}>
+                                disabled={saved}
+                            >
                                 {saved ? "Saved" : "Save"}
                             </button>
 
-                            <button onClick={changePrivacy}>{data?.public ? "Public" : "Private"}</button>
+                            <button onClick={changePrivacy}>
+                                {data?.public ? "Public" : "Private"}
+                            </button>
                             <button onClick={openShareModal}>Share</button>
                         </>
                     )}
                     <button onClick={downloadJSON}>{"Download JSON"}</button>
                 </Navbar>
             )}
-            <div className='editor' style={{ transform: `scale(${props.scale ? props.scale : 1})` }}>
+            <div
+                className="editor"
+                style={{ transform: `scale(${props.scale ? props.scale : 1})` }}
+            >
                 <div
-                    className='editor-canvas-wrapper'
+                    className="editor-canvas-wrapper"
                     onClick={function (e) {
                         try {
-                            if (clickedCircle && !e?.target?.className?.includes("circle")) {
+                            if (
+                                clickedCircle &&
+                                !e?.target?.className?.includes("circle")
+                            ) {
                                 exitConnectCircle();
                             }
                         } catch {}
-                    }}>
+                    }}
+                >
                     <TransformWrapper
                         panning={{ excluded: ["circle", "circle-text"] }}
                         minScale={1}
@@ -529,8 +587,11 @@ function Editor(props) {
                         }}
                         // limitToBounds={false}
                     >
-                        <TransformComponent wrapperStyle={{ width: "100%" }} contentStyle={{ width: "100%" }}>
-                            <div class='editor-canvas'>
+                        <TransformComponent
+                            wrapperStyle={{ width: "100%" }}
+                            contentStyle={{ width: "100%" }}
+                        >
+                            <div class="editor-canvas">
                                 {circleData.map((circle, index) => (
                                     <Circle
                                         key={index.toString()}
@@ -538,7 +599,9 @@ function Editor(props) {
                                         updateCircle={updateCircle}
                                         showContextMenu={handleContextMenu}
                                         handleClick={handleCircleClick}
-                                        disabled={unavailableCircles.includes(circle.id)}
+                                        disabled={unavailableCircles.includes(
+                                            circle.id
+                                        )}
                                         currentScale={currentScale}
                                     />
                                 ))}
@@ -546,58 +609,105 @@ function Editor(props) {
                                     <Connection
                                         data={connection}
                                         circleData={circleDataMap}
-                                        selected={selectedConnection == connection.id}
+                                        selected={
+                                            selectedConnection == connection.id
+                                        }
                                         showContextMenu={handleContextMenu}
                                         selectConnection={selectConnection}
                                     />
                                 ))}
-                                {circleData?.length == 0 && <h1 className='instruction-text'>Get started by adding a circle.</h1>}
+                                {circleData?.length == 0 && (
+                                    <h1 className="instruction-text">
+                                        Get started by adding a circle.
+                                    </h1>
+                                )}
                             </div>
                         </TransformComponent>
                     </TransformWrapper>
                 </div>
                 {!props.data && (
-                    <div className='editor-sidebar'>
-                        <div className='card light-shadow add-circle-card'>
+                    <div className="editor-sidebar">
+                        <div className="card light-shadow add-circle-card">
                             <form
                                 onSubmit={function (e) {
                                     e.preventDefault();
                                     let type = "text";
-                                    if (isUrl(newCardInput.current.value)) type = "image";
+                                    if (isUrl(newCardInput.current.value))
+                                        type = "image";
                                     addCircle(type, newCardInput.current.value);
                                     newCardInput.current.value = "";
-                                }}>
-                                <input ref={newCardInput} className='input' placeholder={"Add a card..."}></input>
+                                }}
+                            >
+                                <input
+                                    ref={newCardInput}
+                                    className="input"
+                                    placeholder={"Add a card..."}
+                                ></input>
                             </form>
                         </div>
                         {connectionData.length > 0 && (
-                            <div className='card light-shadow connections-card'>
+                            <div className="card light-shadow connections-card">
                                 <DragDropContext onDragEnd={onDragEnd}>
-                                    <Droppable droppableId='droppable'>
+                                    <Droppable droppableId="droppable">
                                         {(provided, snapshot) => (
-                                            <div {...provided.droppableProps} ref={provided.innerRef}>
-                                                {connectionData.map((connection, index) => (
-                                                    <Draggable key={connection.id} draggableId={connection.id} index={index} isDragDisabled={!allowEditing}>
-                                                        {renderDraggable((provided, snapshot) => (
-                                                            <div
-                                                                ref={provided.innerRef}
-                                                                {...provided.draggableProps}
-                                                                {...provided.dragHandleProps}
-                                                                className='connection-title-wrapper'
-                                                                style={{
-                                                                    ...provided.draggableProps.style,
-                                                                }}>
-                                                                <ConnectionTitle
-                                                                    data={connection}
-                                                                    circleData={circleDataMap}
-                                                                    selected={selectedConnection == connection.id}
-                                                                    selectConnection={selectConnection}
-                                                                    switchConnectionDirection={switchConnectionDirection}
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </Draggable>
-                                                ))}
+                                            <div
+                                                {...provided.droppableProps}
+                                                ref={provided.innerRef}
+                                            >
+                                                {connectionData.map(
+                                                    (connection, index) => (
+                                                        <Draggable
+                                                            key={connection.id}
+                                                            draggableId={
+                                                                connection.id
+                                                            }
+                                                            index={index}
+                                                            isDragDisabled={
+                                                                !allowEditing
+                                                            }
+                                                        >
+                                                            {renderDraggable(
+                                                                (
+                                                                    provided,
+                                                                    snapshot
+                                                                ) => (
+                                                                    <div
+                                                                        ref={
+                                                                            provided.innerRef
+                                                                        }
+                                                                        {...provided.draggableProps}
+                                                                        {...provided.dragHandleProps}
+                                                                        className="connection-title-wrapper"
+                                                                        style={{
+                                                                            ...provided
+                                                                                .draggableProps
+                                                                                .style,
+                                                                        }}
+                                                                    >
+                                                                        <ConnectionTitle
+                                                                            data={
+                                                                                connection
+                                                                            }
+                                                                            circleData={
+                                                                                circleDataMap
+                                                                            }
+                                                                            selected={
+                                                                                selectedConnection ==
+                                                                                connection.id
+                                                                            }
+                                                                            selectConnection={
+                                                                                selectConnection
+                                                                            }
+                                                                            switchConnectionDirection={
+                                                                                switchConnectionDirection
+                                                                            }
+                                                                        />
+                                                                    </div>
+                                                                )
+                                                            )}
+                                                        </Draggable>
+                                                    )
+                                                )}
                                                 {provided.placeholder}
                                             </div>
                                         )}
@@ -606,11 +716,11 @@ function Editor(props) {
                             </div>
                         )}
                         {selectedConnection && (
-                            <div className='card light-shadow connection-text-card'>
+                            <div className="card light-shadow connection-text-card">
                                 <textarea
                                     disabled={!allowEditing}
-                                    className='connection-text'
-                                    placeholder='Type connection text here...'
+                                    className="connection-text"
+                                    placeholder="Type connection text here..."
                                     value={connectionTextInput}
                                     onChange={function (e) {
                                         setConnectionTextInput(e.target.value);
@@ -620,35 +730,50 @@ function Editor(props) {
                         )}
                     </div>
                 )}
-                {createPortal(renderContextMenu(), document.body)} {/* context menu*/}
-                <Modal isOpen={showShareModal} onRequestClose={closeShareModal} onAfterClose={saveCollaborators} closeTimeoutMS={300}>
-                    <div className='share-modal-top'>
+                {createPortal(renderContextMenu(), document.body)}{" "}
+                {/* context menu*/}
+                <Modal
+                    isOpen={showShareModal}
+                    onRequestClose={closeShareModal}
+                    onAfterClose={saveCollaborators}
+                    closeTimeoutMS={300}
+                >
+                    <div className="share-modal-top">
                         <h1>Share "{data?.name}"</h1>
                         <form
                             onSubmit={function (e) {
                                 e.preventDefault();
                                 addCollaborator();
-                            }}>
-                            <input ref={shareEmailInput} className='input' placeholder='Type an email...' />
+                            }}
+                        >
+                            <input
+                                ref={shareEmailInput}
+                                className="input"
+                                placeholder="Type an email..."
+                            />
                         </form>
                     </div>
-                    <div className='share-modal-middle'>
+                    <div className="share-modal-middle">
                         {data?.collaborators?.map((email) => {
                             return (
-                                <div className='share-modal-email'>
+                                <div className="share-modal-email">
                                     <div>{email}</div>
                                     <button
                                         onClick={function () {
                                             removeCollaborator(email);
-                                        }}>
+                                        }}
+                                    >
                                         X
                                     </button>
                                 </div>
                             );
                         })}
                     </div>
-                    <div className='share-modal-bottom'>
-                        <button className='share-modal-bottom-button primary-button' onClick={closeShareModal}>
+                    <div className="share-modal-bottom">
+                        <button
+                            className="share-modal-bottom-button primary-button"
+                            onClick={closeShareModal}
+                        >
                             Close
                         </button>
                     </div>

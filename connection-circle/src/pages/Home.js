@@ -19,7 +19,10 @@ function Home(props) {
 
     const navigate = useNavigate();
     const [user, userLoading, error] = useAuthState(auth);
-    const [mapData, dataLoading, dataError] = useCollectionData(collection(firestore, `users/${user?.uid}/maps`), { idField: "mapID" });
+    const [mapData, dataLoading, dataError] = useCollectionData(
+        collection(firestore, `users/${user?.uid}/maps`),
+        { idField: "mapID" }
+    );
 
     useEffect(
         function () {
@@ -50,7 +53,10 @@ function Home(props) {
             collaborators: [],
         };
 
-        addDoc(collection(firestore, `/users/${user.uid}/maps`), newMapData).then(function (result) {
+        addDoc(
+            collection(firestore, `/users/${user.uid}/maps`),
+            newMapData
+        ).then(function (result) {
             let docID = result.id;
             navigate(`/map/${user.uid}/${docID}`);
         });
@@ -59,16 +65,29 @@ function Home(props) {
     return (
         <>
             <Navbar></Navbar>
-            <div className='home-cards'>
+            <div className="home-cards">
                 <form onSubmit={handleSubmit(onSubmit)}>
                     {/* register your input into the hook by invoking the "register" function */}
-                    <div className='card light-shadow'>
-                        <h1 className='map-card-name'>Create a Map</h1>
-                        <input className='input create-map-input' placeholder='Map name...' {...register("name", { required: true })} />
-                        {errors.name && <p className='form-error'>This field is required</p>}
-                        <input className='input create-map-input' placeholder='Map description...' {...register("description")} />
+                    <div className="card light-shadow">
+                        <h1 className="map-card-name">Create a Map</h1>
+                        <input
+                            className="input create-map-input"
+                            placeholder="Map name..."
+                            {...register("name", { required: true })}
+                        />
+                        {errors.name && (
+                            <p className="form-error">This field is required</p>
+                        )}
+                        <input
+                            className="input create-map-input"
+                            placeholder="Map description..."
+                            {...register("description")}
+                        />
 
-                        <button type='submit' className='light-shadow primary-button'>
+                        <button
+                            type="submit"
+                            className="light-shadow primary-button"
+                        >
                             Create
                         </button>
                     </div>

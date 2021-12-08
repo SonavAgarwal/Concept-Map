@@ -34,12 +34,12 @@ function App(props) {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path='/'>
+                <Route path="/">
                     <Route index element={<Home />} />
-                    <Route path='home' element={<Home />} />
-                    <Route path='auth' element={<Auth />} />
-                    <Route path='map/:uid/:mapID' element={<Editor />} />
-                    <Route path='*' element={<RedirectHome />} />
+                    <Route path="home" element={<Home />} />
+                    <Route path="auth" element={<Auth />} />
+                    <Route path="map/:uid/:mapID" element={<Editor />} />
+                    <Route path="*" element={<RedirectHome />} />
                 </Route>
             </Routes>
         </BrowserRouter>
@@ -49,10 +49,18 @@ function App(props) {
 function RedirectHome() {
     const navigate = useNavigate();
 
-    useEffect(function () {
-        navigate("/");
-    }, []);
-    return null;
+    return (
+        <div className="no-permission">
+            <p>Error 404</p>
+            <button
+                onClick={function () {
+                    navigate(-1);
+                }}
+            >
+                Go Back.
+            </button>
+        </div>
+    );
 }
 
 export default AppWrapper;
