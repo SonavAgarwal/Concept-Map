@@ -30,6 +30,7 @@ function Navbar(props) {
             <div className='navbar-middle-section'></div>
             <div className='navbar-button-section'>
                 {props.children}
+                <img src={user?.photoURL} className='navbar-pfp' />
                 <button
                     onClick={function () {
                         if (user) {

@@ -15,7 +15,7 @@ function Auth(props) {
 
     useEffect(
         function () {
-            if (user) navigate("/home");
+            if (!loading && user) navigate("/home");
         },
         [user]
     );

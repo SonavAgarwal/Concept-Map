@@ -8,8 +8,10 @@ function Circle(props) {
     const element = useRef();
 
     const [dragData, setDragData] = useState({});
+    const [editing, setEditing] = useState(false);
+    const [content, setContent] = useState(props?.data?.content);
 
-    function getCircleContent() {
+    function getCircleContent(props2) {
         switch (props.data?.type) {
             case "text":
                 return (
@@ -17,8 +19,9 @@ function Circle(props) {
                         className='circle light-shadow hover-shadow'
                         style={{
                             borderColor: `${props.data.color}`,
+                            overflow: editing ? "visible" : undefined,
                         }}>
-                        <div className='circle-text'>{props.data.content}</div>
+                        {getCircleText()}
                     </div>
                 );
                 break;
@@ -30,10 +33,6 @@ function Circle(props) {
                             border: `0.3rem solid ${props.data.color}`,
                             backgroundImage: `url(${props.data.content}), url(${LinkIcon})`,
                         }}>
-                        {/* <img
-                            className="circle-image"
-                            src={props.data.content}
-                        ></img> */}
                         <a href={props.data?.content} target='_blank' className={"circle-open-button no-cursor"}>
                             Link
                         </a>
@@ -44,6 +43,45 @@ function Circle(props) {
                 return <div></div>;
                 break;
         }
+    }
+
+    function getCircleText(props2) {
+        if (editing) {
+            return (
+                <form
+                    onSubmit={function (e) {
+                        e.preventDefault();
+                        props.updateCircle(props.data.id, {
+                            content: content,
+                        });
+                        setEditing(false);
+                    }}>
+                    <input
+                        autoFocus
+                        key={"circle-text-form"}
+                        className='circle-text'
+                        style={{ padding: "calc(var(--margin) / 1)" }}
+                        onBlur={function () {
+                            props.updateCircle(props.data.id, {
+                                content: content,
+                            });
+                            setEditing(false);
+                        }}
+                        onFocus={function (e) {
+                            e.target.select();
+                        }}
+                        onChange={function (e) {
+                            setContent(e.target.value);
+                        }}
+                        onClick={function (e) {
+                            e.target.select();
+                        }}
+                        value={content}
+                    />
+                </form>
+            );
+        }
+        return <div className='circle-text'>{props.data.content}</div>;
     }
 
     useEffect(
@@ -60,7 +98,7 @@ function Circle(props) {
             onDrag={function (mouseEvent, dragPosition) {
                 setDragData(dragPosition);
                 props.updateCircle(props.data.id, {
-                    ...props.data,
+                    // ...props.data,
                     x: dragPosition.x,
                     y: dragPosition.y,
                 });
@@ -73,7 +111,11 @@ function Circle(props) {
                 key={props.key}
                 ref={element}
                 onClick={function (e) {
-                    props.handleClick(e, props.data?.id);
+                    if (e.detail === 2) {
+                        setEditing(true);
+                    } else if (e.detail === 1) {
+                        props.handleClick(e, props.data?.id);
+                    }
                 }}
                 className='circle-wrapper'
                 onContextMenuCapture={function (e) {

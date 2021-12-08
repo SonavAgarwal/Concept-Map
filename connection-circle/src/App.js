@@ -34,15 +34,25 @@ function App(props) {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/">
+                <Route path='/'>
                     <Route index element={<Home />} />
-                    <Route path="home" element={<Home />} />
-                    <Route path="auth" element={<Auth />} />
-                    <Route path="map/:uid/:mapID" element={<Editor />} />
+                    <Route path='home' element={<Home />} />
+                    <Route path='auth' element={<Auth />} />
+                    <Route path='map/:uid/:mapID' element={<Editor />} />
+                    <Route path='*' element={<RedirectHome />} />
                 </Route>
             </Routes>
         </BrowserRouter>
     );
+}
+
+function RedirectHome() {
+    const navigate = useNavigate();
+
+    useEffect(function () {
+        navigate("/");
+    }, []);
+    return null;
 }
 
 export default AppWrapper;

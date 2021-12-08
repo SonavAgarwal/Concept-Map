@@ -33,7 +33,7 @@ function Home(props) {
     function onSubmit(data) {
         if (!user) return;
 
-        if (mapData?.length >= 5) {
+        if (mapData?.length >= 10) {
             alert("You can create a maximum of five maps.");
             return;
         }
@@ -47,14 +47,13 @@ function Home(props) {
             public: false,
             circles: [],
             connections: [],
+            collaborators: [],
         };
 
         addDoc(collection(firestore, `/users/${user.uid}/maps`), newMapData).then(function (result) {
             let docID = result.id;
             navigate(`/map/${user.uid}/${docID}`);
         });
-
-        console.log(data);
     }
 
     return (

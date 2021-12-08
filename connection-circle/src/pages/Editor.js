@@ -8,6 +8,8 @@ import isUrl from "is-url";
 import { Item, Menu, Separator, useContextMenu } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
 import { CirclePicker } from "react-color";
+// import { Circle as CircleButton } from "react-color";
+
 import { useDocumentData } from "react-firebase-hooks/firestore";
 import { doc, updateDoc } from "@firebase/firestore";
 import { auth, firestore } from "../firebase";
@@ -18,7 +20,17 @@ import { useBeforeunload } from "react-beforeunload";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { createPortal } from "react-dom";
 import { set } from "react-hook-form";
+import { circleColors } from "../config";
+import TimeAgo from "javascript-time-ago";
+import en from "javascript-time-ago/locale/en.json";
+import Modal from "react-modal";
+import isEmail from "is-email";
+
 const fileDownload = require("js-file-download");
+TimeAgo.addDefaultLocale(en);
+const timeAgo = new TimeAgo("en-US");
+
+Modal.setAppElement("#root");
 
 //------------------------------------------
 
@@ -73,6 +85,7 @@ function Editor(props) {
 
     const [allowEditing, setAllowEditing] = useState(false);
     const [user, userLoading] = useAuthState(auth);
+
     const [docData, loading, error] = useDocumentData(doc(firestore, `users/${params.uid}/maps/${params.mapID}`));
     const newCardInput = useRef();
 
@@ -96,9 +109,19 @@ function Editor(props) {
 
     const [saved, setSaved] = useState(true);
 
+    const [showShareModal, setShowShareModal] = useState(false);
+    const shareEmailInput = useRef();
+
     useEffect(
         function () {
-            if (data?.owner != user?.uid || props.viewer) {
+            if (!props.data && (!params.uid || !params.mapID)) navigate("/");
+        },
+        [props.viewer, props.data, params.uid, params.mapID]
+    );
+
+    useEffect(
+        function () {
+            if ((data?.owner != user?.uid && !data?.collaborators?.includes(user?.email)) || props.viewer) {
                 setAllowEditing(false);
             } else {
                 setAllowEditing(true);
@@ -328,7 +351,7 @@ function Editor(props) {
             connections: connectionData,
             lastEditTimestamp: new Date(),
         };
-        updateDoc(doc(firestore, `users/${user.uid}/maps/${params.mapID}`), newData).then(function (result) {
+        updateDoc(doc(firestore, `users/${params.uid}/maps/${params.mapID}`), newData).then(function (result) {
             setSaved(true);
         });
     }
@@ -338,7 +361,52 @@ function Editor(props) {
             public: !data?.public,
             lastEditTimestamp: new Date(),
         };
-        updateDoc(doc(firestore, `users/${user.uid}/maps/${params.mapID}`), newData).then(function (result) {
+        updateDoc(doc(firestore, `users/${params.uid}/maps/${params.mapID}`), newData).then(function (result) {
+            setSaved(true);
+        });
+    }
+
+    function openShareModal() {
+        setShowShareModal(true);
+    }
+    function closeShareModal() {
+        setShowShareModal(false);
+    }
+
+    function addCollaborator() {
+        let potentialEmail = shareEmailInput.current.value?.toLowerCase();
+        if (isEmail(potentialEmail)) {
+            shareEmailInput.current.value = "";
+            let newCollaboratorArray = data.collaborators ? data.collaborators : [];
+            newCollaboratorArray.push(potentialEmail);
+            let newData = { ...data, collaborators: newCollaboratorArray };
+            setData(newData);
+            forceUpdate();
+        } else {
+            shareEmailInput.current.classList.add("shakeInvalid");
+            setTimeout(() => {
+                shareEmailInput.current.classList.remove("shakeInvalid");
+            }, 500);
+        }
+    }
+
+    function removeCollaborator(collaboratorEmail) {
+        let newCollaboratorArray = data.collaborators ? data.collaborators : [];
+        newCollaboratorArray = newCollaboratorArray.filter((email) => email !== collaboratorEmail);
+        let newData = { ...data, collaborators: newCollaboratorArray };
+        setData(newData);
+        forceUpdate();
+    }
+
+    function saveCollaborators() {
+        if (!data.collaborators) return;
+        let newData = {
+            collaborators: data.collaborators,
+            circles: circleData,
+            connections: connectionData,
+            lastEditTimestamp: new Date(),
+        };
+        updateDoc(doc(firestore, `users/${params.uid}/maps/${params.mapID}`), newData).then(function (result) {
             setSaved(true);
         });
     }
@@ -350,10 +418,62 @@ function Editor(props) {
         fileDownload(toDowload, `${data?.name ? data?.name : "Map"}.json`);
     }
 
+    function renderContextMenu() {
+        return (
+            <Menu animation={"scale"} id={"circle-menu-id"}>
+                {clickedCircle && (
+                    <>
+                        <Item
+                            onClick={function () {
+                                startConnectCircle();
+                            }}>
+                            Connect
+                        </Item>
+                        <Separator />
+                        <div className='color-picker-wrapper'>
+                            <CirclePicker
+                                colors={circleColors}
+                                onChangeComplete={function (color) {
+                                    let circle = circleDataMap[clickedCircle];
+                                    if (!circle) return;
+                                    updateCircle(circle.id, {
+                                        color: color.hex,
+                                    });
+                                    setClickedCircle("");
+                                    forceUpdate();
+                                }}></CirclePicker>
+                            {/* <CircleButton></CircleButton> */}
+                        </div>
+                        <Separator />
+                    </>
+                )}
+                <Item
+                    onClick={function () {
+                        if (clickedCircle) {
+                            deleteClickedCircle();
+                        } else if (clickedConnection) {
+                            deleteClickedConnection();
+                        }
+                    }}>
+                    Delete
+                </Item>
+            </Menu>
+        );
+    }
+
     if (Object.keys(data).length === 0) {
         return (
             <div className='no-permission'>
                 <p>Sorry, you don't have permission to view this.</p>
+                {!user && (
+                    <button
+                        className='primary-button'
+                        onClick={function () {
+                            navigate("/auth");
+                        }}>
+                        Sign in.
+                    </button>
+                )}
                 <button
                     onClick={function () {
                         navigate(-1);
@@ -370,6 +490,7 @@ function Editor(props) {
                 <Navbar title={data?.name}>
                     {allowEditing && (
                         <>
+                            <p className='timestamp-string'>Last edited {timeAgo.format(data?.lastEditTimestamp.toDate(), "twitter-minute-now")}</p>
                             <button
                                 onClick={saveMap}
                                 style={{
@@ -380,6 +501,7 @@ function Editor(props) {
                             </button>
 
                             <button onClick={changePrivacy}>{data?.public ? "Public" : "Private"}</button>
+                            <button onClick={openShareModal}>Share</button>
                         </>
                     )}
                     <button onClick={downloadJSON}>{"Download JSON"}</button>
@@ -389,30 +511,20 @@ function Editor(props) {
                 <div
                     className='editor-canvas-wrapper'
                     onClick={function (e) {
-                        // exitConnectCircle();
                         try {
                             if (clickedCircle && !e?.target?.className?.includes("circle")) {
                                 exitConnectCircle();
                             }
                         } catch {}
-                        // try {
-                        //     if (
-                        //         clickedConnection &&
-                        //         !e?.target?.className?.includes("connection")
-                        //     ) {
-                        //         exitConnectCircle();
-                        //     }
-                        // } catch {}
                     }}>
                     <TransformWrapper
                         panning={{ excluded: ["circle", "circle-text"] }}
                         minScale={1}
                         initialScale={1}
-                        maxScale={1}
+                        maxScale={2}
                         initialPositionX={0}
                         initialPositionY={0}
                         onZoom={function (transform) {
-                            console.log(transform.state.scale);
                             setCurrentScale(transform.state.scale);
                         }}
                         // limitToBounds={false}
@@ -491,8 +603,6 @@ function Editor(props) {
                                         )}
                                     </Droppable>
                                 </DragDropContext>
-                                {/* {connectionData.map((connection) => (
-                                ))} */}
                             </div>
                         )}
                         {selectedConnection && (
@@ -510,42 +620,39 @@ function Editor(props) {
                         )}
                     </div>
                 )}
-                <Menu animation={"scale"} id={"circle-menu-id"}>
-                    {clickedCircle && (
-                        <>
-                            <Item
-                                onClick={function () {
-                                    startConnectCircle();
-                                }}>
-                                Connect
-                            </Item>
-                            <Separator />
-                            <div className='color-picker-wrapper'>
-                                <CirclePicker
-                                    onChangeComplete={function (color) {
-                                        let circle = circleDataMap[clickedCircle];
-                                        if (!circle) return;
-                                        updateCircle(circle.id, {
-                                            color: color.hex,
-                                        });
-                                        setClickedCircle("");
-                                        forceUpdate();
-                                    }}></CirclePicker>
-                            </div>
-                            <Separator />
-                        </>
-                    )}
-                    <Item
-                        onClick={function () {
-                            if (clickedCircle) {
-                                deleteClickedCircle();
-                            } else if (clickedConnection) {
-                                deleteClickedConnection();
-                            }
-                        }}>
-                        Delete
-                    </Item>
-                </Menu>
+                {createPortal(renderContextMenu(), document.body)} {/* context menu*/}
+                <Modal isOpen={showShareModal} onRequestClose={closeShareModal} onAfterClose={saveCollaborators} closeTimeoutMS={300}>
+                    <div className='share-modal-top'>
+                        <h1>Share "{data?.name}"</h1>
+                        <form
+                            onSubmit={function (e) {
+                                e.preventDefault();
+                                addCollaborator();
+                            }}>
+                            <input ref={shareEmailInput} className='input' placeholder='Type an email...' />
+                        </form>
+                    </div>
+                    <div className='share-modal-middle'>
+                        {data?.collaborators?.map((email) => {
+                            return (
+                                <div className='share-modal-email'>
+                                    <div>{email}</div>
+                                    <button
+                                        onClick={function () {
+                                            removeCollaborator(email);
+                                        }}>
+                                        X
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className='share-modal-bottom'>
+                        <button className='share-modal-bottom-button primary-button' onClick={closeShareModal}>
+                            Close
+                        </button>
+                    </div>
+                </Modal>
             </div>
         </>
     );
