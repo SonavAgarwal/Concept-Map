@@ -23,6 +23,7 @@ import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en.json";
 import Modal from "react-modal";
 import isEmail from "is-email";
+import { evaluateMath } from "../misc/EvaluateMath";
 
 const fileDownload = require("js-file-download");
 TimeAgo.addDefaultLocale(en);
@@ -128,6 +129,13 @@ function Editor(props) {
         [props.viewer, data]
     );
 
+    function setUnsaved() {
+        setSaved(false);
+        if (data?.mathMode) {
+            evaluateMath(circleData, circleDataMap, connectionData, connectionDataMap);
+        }
+    }
+
     useBeforeunload((event) => {
         if (!saved && allowEditing) return "unsaved changes";
     });
@@ -144,7 +152,7 @@ function Editor(props) {
             let connectionObject = connectionDataMap[selectedConnection];
             if (connectionObject) {
                 connectionObject.text = connectionTextInput;
-                setSaved(false);
+                setUnsaved();
             }
             forceUpdate();
         },
@@ -182,7 +190,7 @@ function Editor(props) {
 
         setConnectionData(items);
         forceUpdate();
-        if (result.source.index != result.destination.index) setSaved(false);
+        if (result.source.index != result.destination.index) setUnsaved();
     }
 
     function startConnectCircle() {
@@ -221,7 +229,7 @@ function Editor(props) {
         exitConnectCircle();
 
         forceUpdate();
-        setSaved(false);
+        setUnsaved();
     }
 
     function exitConnectCircle() {
@@ -275,7 +283,7 @@ function Editor(props) {
 
         con.circles.reverse();
         forceUpdate();
-        setSaved(false);
+        setUnsaved();
     }
 
     function toggleConnectionArrow(connectionID) {
@@ -284,7 +292,7 @@ function Editor(props) {
 
         con.arrow = !con.arrow;
         forceUpdate();
-        setSaved(false);
+        setUnsaved();
     }
 
     function updateCircle(circleID, newData) {
@@ -292,7 +300,7 @@ function Editor(props) {
         Object.assign(targetObject, newData);
         forceUpdate();
 
-        setSaved(false);
+        setUnsaved();
     }
 
     function addCircle(type, content) {
@@ -310,7 +318,7 @@ function Editor(props) {
         circleDataMap[id] = newCircleData;
 
         forceUpdate();
-        setSaved(false);
+        setUnsaved();
     }
 
     function selectConnection(connectionID) {
@@ -338,7 +346,7 @@ function Editor(props) {
         setClickedCircle("");
         setConnectionData(newConnections);
         forceUpdate();
-        setSaved(false);
+        setUnsaved();
     }
 
     function deleteClickedConnection() {
@@ -349,7 +357,7 @@ function Editor(props) {
 
         setClickedConnection("");
         forceUpdate();
-        setSaved(false);
+        setUnsaved();
     }
 
     function saveMap() {
@@ -366,6 +374,16 @@ function Editor(props) {
     function changePrivacy() {
         let newData = {
             public: !data?.public,
+            lastEditTimestamp: new Date(),
+        };
+        updateDoc(doc(firestore, `users/${params.uid}/maps/${params.mapID}`), newData).then(function (result) {
+            setSaved(true);
+        });
+    }
+
+    function changeMathMode() {
+        let newData = {
+            mathMode: !data?.mathMode,
             lastEditTimestamp: new Date(),
         };
         updateDoc(doc(firestore, `users/${params.uid}/maps/${params.mapID}`), newData).then(function (result) {
@@ -527,6 +545,7 @@ function Editor(props) {
                                 {saved ? "Saved" : "Save"}
                             </button>
 
+                            <button onClick={changeMathMode}>{data?.mathMode ? "Math Mode ON" : "-x+/="}</button>
                             <button onClick={changePrivacy}>{data?.public ? "Public" : "Private"}</button>
                             <button onClick={openShareModal}>Share</button>
                         </>
