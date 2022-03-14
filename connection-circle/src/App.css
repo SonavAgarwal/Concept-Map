@@ -23,18 +23,6 @@
     min-width: 100vw;
 }
 
-.light-shadow {
-    /* box-shadow: 0rem 0rem 0.5rem rgba(0, 0, 0, 0.25); */
-    filter: drop-shadow(0 0 0.25rem rgba(0, 0, 0, 0.25));
-}
-
-.hover-shadow {
-    transition: filter 0.3s ease;
-}
-.hover-shadow:hover {
-    filter: drop-shadow(0 0 calc(var(--circle-size) / 2) var(--primary-color));
-}
-
 .navbar {
     width: 100vw;
     height: var(--navbar-height);
@@ -157,12 +145,16 @@
 }
 
 .connection-line:hover {
-    stroke: var(--primary-color);
+    /* stroke: var(--primary-color); */
 }
 
 .connection-line-svg {
     position: absolute;
     pointer-events: none;
+}
+
+.connection-line-arrow {
+    transition: all 0.3s ease;
 }
 
 .editor {
@@ -547,4 +539,23 @@ input.shakeInvalid {
     100% {
         transform: translateX(0);
     }
+}
+
+.light-shadow {
+    /* box-shadow: 0rem 0rem 0.5rem rgba(0, 0, 0, 0.25); */
+    filter: drop-shadow(0 0 0.25rem rgba(0, 0, 0, 0.25));
+}
+
+.hover-shadow {
+    transition: filter 0.3s ease;
+}
+.hover-shadow:hover {
+    filter: drop-shadow(0 0 calc(var(--circle-size) / 2) var(--primary-color));
+}
+
+.hover-shadow-applied {
+    filter: drop-shadow(0 0 calc(var(--circle-size) / 2) var(--primary-color));
+    transition: all 0.3s ease;
+    fill: var(--primary-color);
+    stroke: var(--primary-color);
 }

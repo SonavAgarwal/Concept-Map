@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { circleSize } from "../../config";
+import { useHover } from "../../misc/useHover";
 
 function Connection(props) {
+    const [hoverRef, isHovered] = useHover();
+
+    let displayHover = isHovered || props.selected;
+
     // const [x1, setX1] = useState(0);
     // const [x2, setX2] = useState(0);
     // const [y1, setY1] = useState(0);
@@ -16,6 +21,16 @@ function Connection(props) {
     x2 += halfCircle;
     y1 += halfCircle;
     y2 += halfCircle;
+
+    if (Math.abs(x2 - x1) < halfCircle && Math.abs(y2 - y1) < halfCircle) {
+        x2 = x1;
+        y2 = y1;
+    } else if (props.data.arrow) {
+        let overHalfCircle = convertRemToPixels(circleSize * 7);
+        let angle = Math.atan2(y2 - y1, x2 - x1);
+        y2 -= Math.sin(angle) * overHalfCircle;
+        x2 -= Math.cos(angle) * overHalfCircle;
+    }
 
     // useEffect(
     //     function () {
@@ -47,7 +62,20 @@ function Connection(props) {
             onContextMenu={function (e) {
                 props.showContextMenu(e, "connection", props.data?.id);
             }}>
-            <line className={"connection-line hover-shadow " + (props.selected ? "connection-line-selected" : "")} x1={x1} y1={y1} x2={x2} y2={y2}></line>
+            <defs>
+                <marker id={`arrowhead-${props.data?.id}`} markerWidth='20' markerHeight='20' refX='10' refY='10' orient='auto'>
+                    <polygon className={`connection-line-arrow ${displayHover && "hover-shadow-applied"}`} strokeWidth={0} points='10 7.5, 15 10, 10 12.5' />
+                </marker>
+            </defs>
+            {/* ${props.selected && "connection-line-selected"}  */}
+            <line
+                ref={hoverRef}
+                className={`connection-line ${displayHover && "hover-shadow-applied"}`}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                markerEnd={`url(#arrowhead-${props.data?.id})`}></line>
         </svg>
     );
 }
